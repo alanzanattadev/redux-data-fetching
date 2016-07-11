@@ -1,0 +1,31 @@
+{
+  "name": "redux-data-fetching",
+  "version": "1.0.0",
+  "description": "middleware for data fetching in redux",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "data",
+    "fetch",
+    "redux"
+  ],
+  "jest": {
+    "automock": false
+  },
+  "author": "alanzanattadev",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-jest": "^13.0.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.11.1",
+    "flowtype": "^1.0.0",
+    "jest-cli": "^13.0.0",
+    "redux": "^3.5.2"
+  },
+  "dependencies": {
+    "graphql": "^0.6.0",
+    "immutable": "^3.8.1"
+  }
+}
