@@ -22,10 +22,12 @@
     "babel-preset-react": "^6.11.1",
     "flowtype": "^1.0.0",
     "jest-cli": "^13.0.0",
+    "react-addons-test-utils": "^15.2.1",
     "redux": "^3.5.2"
   },
   "dependencies": {
     "graphql": "^0.6.0",
-    "immutable": "^3.8.1"
+    "immutable": "^3.8.1",
+    "react": "^15.2.1"
   }
 }
