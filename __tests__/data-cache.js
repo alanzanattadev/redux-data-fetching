@@ -82,4 +82,96 @@ describe('reducer', () => {
       });
     });
   });
+  describe('Resources removal', () => {
+    it('Removes nested resources', () => {
+      let state = {
+        profile: {
+          friends: [{
+            id: 5,
+            name: "Alan"
+          }, {
+            id: 10,
+            name: "Mark",
+          }, {
+            id: 15,
+            name: "Aaron"
+          }],
+          token: "mytoken"
+        },
+        appointments: [{
+          id: 1,
+          debutHour: 12
+        }]
+      };
+
+      let removeRequest = {
+        profile: {
+          friends: [{id: 5}, {id: 15}],
+          token: true
+        },
+        appointments: [{id: 1}]
+      };
+
+      let result = reducer(state, {type: "GRAPHQL_DATA_REMOVED", payload: removeRequest});
+      expect(result).toEqual({
+        profile: {
+          friends: [{
+            id: 10,
+            name: "Mark"
+          }]
+        },
+        appointments: []
+      });
+    });
+    it('Handles non existing resources', () => {
+      let state = {
+        profile: {
+          friends: [{
+            id: 5,
+            name: "Alan"
+          }, {
+            id: 10,
+            name: "Mark"
+          }, {
+            id: 15,
+            name: "Aaron"
+          }],
+          token: "mytoken"
+        },
+        appointments: [{
+          id: 1,
+          debutHour: 12
+        }]
+      };
+
+      let removeRequest = {
+        user: {
+          token: true
+        },
+        profile: {
+          token: true
+        }
+      };
+
+      let result = reducer(state, {type: "GRAPHQL_DATA_REMOVED", payload: removeRequest});
+      expect(result).toEqual({
+        profile: {
+          friends: [{
+            id: 5,
+            name: "Alan"
+          }, {
+            id: 10,
+            name: "Mark"
+          }, {
+            id: 15,
+            name: "Aaron"
+          }],
+        },
+        appointments: [{
+          id: 1,
+          debutHour: 12
+        }]
+      });
+    });
+  });
 });
