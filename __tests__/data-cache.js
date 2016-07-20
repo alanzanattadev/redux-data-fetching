@@ -53,7 +53,7 @@ describe('reducer', () => {
           name: "Mark",
           age: 20,
           friends: [{
-            id: "1"
+            id: "0"
           }]
         }, {
           id: "0",
