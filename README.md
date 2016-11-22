@@ -4,7 +4,7 @@ Automatic data managment with caching and auto merging of cached data and fetche
 
 Install module
 ```shell
-npm install --save redux-data-fetching
+npm install --save alanzanattadev/redux-data-fetching
 ```
 # Redux
 
@@ -44,7 +44,7 @@ Caches user and appointments resources, updating existing keys (based on id for 
 
 ### GRAPHQL_DATA_REMOVED
 
-Specifies paths of resources to remove with an object, based on id for array resources.
+Specifies paths of resources to remove, with an object, based on id for array resources. The reducer will remove data of the same path that are set to true, and entities defined by ID in array of path (eg: appointments with id 1 and 10 in data.appointments and data.user.token in the example below). The paths are defined with objects of the same shape than the reducer data.
 
 ```javascript
 {
@@ -61,7 +61,6 @@ Specifies paths of resources to remove with an object, based on id for array res
   }
 }
 ```
-Removes user token and appointments with id 1 and 10.
 
 ## Middleware
 
@@ -141,6 +140,40 @@ store.getState().reducer.yourresource
 
 ## React Connecter
 
+### GraphQLConnecter
+GraphQLConnecter is a Higher Order Component which connect a wrapped component to GraphQL, allowing the component to describe its needs and how to send them to the component. It requires the data reducer as prop "data". It automatically detects needs change and request data again based on what's already cached and new needs.
+
+```javascript
+// React and component imports ...
+import {GraphQLConnecter} from 'redux-data-fetching';
+
+let UserCard = connect(state => ({data: state.data}))(GraphQLConnecter(
+  (props) => `{
+    user(id: "${props.userId}") {
+      name,
+      age
+    }
+  }`,
+  (cache, props) => ({
+    name: cache.users.find(user => user.id == props.userId).name,
+    age: cache.users.find(user => user.id == props.userId).age
+  })
+)(WrappedComponent))
+
+let Page = ( ) => <UserCard userId="8943294"/>
+```
+
+params:
+  - Function that takes props as parameter and returns a GraphQL request string
+  ```javascript
+    mapPropsToNeeds(props: any): string
+  ```
+  - Function that takes the data cache and the props as parameters and returns props passed to the WrappedComponent
+  ```javascript
+    mapCacheToProps(cache: any, props: any): any
+  ```
+
+### GraphQLContainer - Deprecated !!! !!! !!
 GraphQLContainer component which auto fetch needed data described as GraphQL query and respecting refresh requirements
 
 ### Use
