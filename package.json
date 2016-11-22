@@ -2,7 +2,7 @@
   "name": "redux-data-fetching",
   "version": "1.0.0",
   "description": "middleware for data fetching in redux",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "jest"
   },
