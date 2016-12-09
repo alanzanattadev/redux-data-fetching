@@ -8,7 +8,7 @@ import {mount} from 'enzyme';
 describe('connecter', () => {
   it('should fetch data on mount and display', () => {
     let dispatch = jest.fn();
-    let data = {};
+    let data = fromJS({});
     let renderer = TestUtils.createRenderer();
     let Child = ({name}) => (<h1>{name}</h1>)
     renderer.render((
@@ -22,9 +22,9 @@ describe('connecter', () => {
     renderer._instance._instance.componentDidMount();
     expect(dispatch.mock.calls.length).toBe(1);
     expect(dispatch.mock.calls[0]).toEqual([{type: "GRAPHQL_FETCH", graphql:true, payload: "user{name}"}]);
-    data = {
+    data = fromJS({
       user: {name: "Alan"}
-    }
+    });
     renderer.render((
       <Connecter dispatch={dispatch} data={data} needs='user{name}' mapCacheToProps={(data) => ({name: fromJS(data).getIn(["user", "name"])})}>
         <Child/>
@@ -44,8 +44,8 @@ describe('HOC', () => {
       </div>
     );
     let spy = jest.fn();
-    let MyFetcherComponent = GraphQLConnecter(props => `{user(id: "${props.id}") {name, description}}`, (cache, props) => cache.users[props.id])(MyComponent);
-    let subject = mount(<MyFetcherComponent dispatch={spy} data={{users: {'1': {name: 'Jon', description: 'Good'}}}} id={'1'}/>);
+    let MyFetcherComponent = GraphQLConnecter(props => `{user(id: "${props.id}") {name, description}}`, (cache, props) => cache.getIn(['users', props.id]).toJS())(MyComponent);
+    let subject = mount(<MyFetcherComponent dispatch={spy} data={fromJS({users: {'1': {name: 'Jon', description: 'Good'}}})} id={'1'}/>);
 
     expect(spy).toBeCalledWith({
       type: 'GRAPHQL_FETCH',
@@ -61,8 +61,8 @@ describe('HOC', () => {
         <p>{description}</p>
       </div>
     );
-    let MyFetcherComponent = GraphQLConnecter(props => `{user(id: "${props.id}") {name, description}}`, (cache, props) => cache.users[props.id])(MyComponent);
-    let subject = mount(<MyFetcherComponent dispatch={() => {}} data={{users: {'1': {name: 'Jon', description: 'Good'}}}} id={'1'}/>);
+    let MyFetcherComponent = GraphQLConnecter(props => `{user(id: "${props.id}") {name, description}}`, (cache, props) => cache.getIn(['users', props.id]).toJS())(MyComponent);
+    let subject = mount(<MyFetcherComponent dispatch={() => {}} data={fromJS({users: {'1': {name: 'Jon', description: 'Good'}}})} id={'1'}/>);
 
     expect(subject.find(MyComponent).at(0).prop('name')).toBe('Jon');
     expect(subject.find(MyComponent).at(0).prop('description')).toBe('Good');
@@ -76,8 +76,8 @@ describe('HOC', () => {
       </div>
     );
     let spy = jest.fn();
-    let data = {users: {'1': {name: 'Jon', description: 'Good'}, '2': {name: 'Doe', description: 'Bad'}}};
-    let MyFetcherComponent = GraphQLConnecter(props => `{user(id: "${props.id}") {name, description}}`, (cache, props) => cache.users[props.id])(MyComponent);
+    let data = fromJS({users: {'1': {name: 'Jon', description: 'Good'}, '2': {name: 'Doe', description: 'Bad'}}});
+    let MyFetcherComponent = GraphQLConnecter(props => `{user(id: "${props.id}") {name, description}}`, (cache, props) => cache.getIn(['users', props.id]))(MyComponent);
     let subject = mount(<MyFetcherComponent dispatch={() => {}} data={data} id={'1'}/>);
 
     subject.setProps({dispatch: spy, data: data, id: '2'});

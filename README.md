@@ -141,7 +141,7 @@ store.getState().reducer.yourresource
 ## React Connecter
 
 ### GraphQLConnecter
-GraphQLConnecter is a Higher Order Component which connect a wrapped component to GraphQL, allowing the component to describe its needs and how to send them to the component. It requires the data reducer as prop "data". It automatically detects needs change and request data again based on what's already cached and new needs.
+GraphQLConnecter is a Higher Order Component which connect a wrapped component to GraphQL, allowing the component to describe its needs and how to send them to the component. It requires the data reducer as prop "data" and the props dispatch from redux. It automatically detects needs change and request data again based on what's already cached and new needs.
 
 ```javascript
 // React and component imports ...

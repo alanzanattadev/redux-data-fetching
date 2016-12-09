@@ -1,9 +1,10 @@
+import { fromJS, is } from "immutable";
 import reducer from '../lib/graphql-data-reducer';
 
 describe('reducer', () => {
   describe('Differents types resources merging', () => {
     it('should differientates users and providers', () => {
-      let result = reducer({
+      let result = reducer(fromJS({
         users: [{
           id: "1",
           name: "Mark",
@@ -22,7 +23,7 @@ describe('reducer', () => {
           id: "1",
           method: "post"
         }]
-      }, {
+      }), {
         type: "GRAPHQL_DATA_RECEIVED",
         payload: {
           users: [{
@@ -47,7 +48,8 @@ describe('reducer', () => {
           }
         }
       });
-      expect(result).toEqual({
+
+      expect(is(result, fromJS({
         users: [{
           id: "1",
           name: "Mark",
@@ -78,13 +80,13 @@ describe('reducer', () => {
         }],
         profile: {
           roles: ["admin"]
-        }
-      });
+        },
+      }))).toBe(true);
     });
   });
   describe('Resources removal', () => {
     it('Removes nested resources', () => {
-      let state = {
+      let state = fromJS({
         profile: {
           friends: [{
             id: 5,
@@ -102,7 +104,7 @@ describe('reducer', () => {
           id: 1,
           debutHour: 12
         }]
-      };
+      });
 
       let removeRequest = {
         profile: {
@@ -113,7 +115,7 @@ describe('reducer', () => {
       };
 
       let result = reducer(state, {type: "GRAPHQL_DATA_REMOVED", payload: removeRequest});
-      expect(result).toEqual({
+      expect(is(result, fromJS({
         profile: {
           friends: [{
             id: 10,
@@ -121,10 +123,12 @@ describe('reducer', () => {
           }]
         },
         appointments: []
-      });
+      }))).toBe(true);
     });
+
+
     it('Handles non existing resources', () => {
-      let state = {
+      let state = fromJS({
         profile: {
           friends: [{
             id: 5,
@@ -142,7 +146,7 @@ describe('reducer', () => {
           id: 1,
           debutHour: 12
         }]
-      };
+      });
 
       let removeRequest = {
         user: {
@@ -154,7 +158,7 @@ describe('reducer', () => {
       };
 
       let result = reducer(state, {type: "GRAPHQL_DATA_REMOVED", payload: removeRequest});
-      expect(result).toEqual({
+      expect(is(result, fromJS({
         profile: {
           friends: [{
             id: 5,
@@ -171,7 +175,7 @@ describe('reducer', () => {
           id: 1,
           debutHour: 12
         }]
-      });
+      }))).toBe(true);
     });
   });
 });
