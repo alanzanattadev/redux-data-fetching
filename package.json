@@ -1,6 +1,6 @@
 {
   "name": "redux-data-fetching",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "middleware for data fetching in redux",
   "main": "lib/index.js",
   "scripts": {
