@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Converters To normalizr Schema to normalizr model should convert basic schema correctly 1`] = `
+String {
+  "0": "R",
+  "1": "o",
+  "10": "y",
+  "11": "p",
+  "12": "e",
+  "2": "o",
+  "3": "t",
+  "4": "Q",
+  "5": "u",
+  "6": "e",
+  "7": "r",
+  "8": "y",
+  "9": "T",
+  "Skill": EntitySchema {
+    "_getId": [Function],
+    "_idAttribute": "id",
+    "_key": "Skill",
+    "_mergeStrategy": [Function],
+    "_processStrategy": [Function],
+    "schema": Object {
+      "target": EntitySchema {
+        "_getId": [Function],
+        "_idAttribute": "id",
+        "_key": "User",
+        "_mergeStrategy": [Function],
+        "_processStrategy": [Function],
+        "schema": Object {
+          "friends": Array [
+            [Circular],
+          ],
+        },
+      },
+    },
+  },
+  "User": EntitySchema {
+    "_getId": [Function],
+    "_idAttribute": "id",
+    "_key": "User",
+    "_mergeStrategy": [Function],
+    "_processStrategy": [Function],
+    "schema": Object {
+      "friends": Array [
+        [Circular],
+      ],
+    },
+  },
+}
+`;
