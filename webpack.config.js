@@ -5,6 +5,7 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    libraryTarget: 'commonjs-module',
   },
   module: {
     rules: [{
@@ -14,6 +15,9 @@ module.exports = {
         loader: 'babel-loader',
       }]
     }]
+  },
+  externals: {
+    react: true,
   },
   devtool: 'source-map',
 }
