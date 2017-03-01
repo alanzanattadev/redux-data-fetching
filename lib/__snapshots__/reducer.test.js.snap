@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Reducer Package Data should package data correctly 1`] = `
+Object {
+  "entities": Object {
+    "Skill": Object {
+      "1": Object {
+        "id": 1,
+        "power": 5,
+        "target": 1,
+      },
+      "2": Object {
+        "id": 2,
+        "power": 2,
+        "target": 2,
+      },
+    },
+    "User": Object {
+      "1": Object {
+        "friends": Array [
+          2,
+          3,
+        ],
+        "id": 1,
+        "name": "Alan",
+      },
+      "2": Object {
+        "friends": Array [
+          3,
+        ],
+        "id": 2,
+        "name": "Antoine",
+      },
+      "3": Object {
+        "age": 28,
+        "id": 3,
+        "name": "Joffrey",
+      },
+    },
+  },
+  "result": Object {
+    "Skill": Array [
+      "1",
+      "2",
+    ],
+    "User": Array [
+      "1",
+      "2",
+    ],
+  },
+}
+`;
+
+exports[`Reducer Remove Data should remove several data 1`] = `
+Object {
+  "entities": Object {
+    "Skill": Object {
+      "1": Object {
+        "id": 1,
+        "power": 2,
+      },
+    },
+    "User": Object {
+      "2": Object {
+        "id": 2,
+        "name": "Joffrey",
+      },
+    },
+  },
+}
+`;
+
+exports[`Reducer Remove Data shouldn't crash if no data exists 1`] = `
+Object {
+  "entities": Object {},
+  "result": Object {},
+}
+`;
+
+exports[`Reducer should accept only one data 1`] = `
+Object {
+  "entities": Object {
+    "User": Object {
+      "2": Object {
+        "id": "2",
+      },
+    },
+  },
+  "result": Object {
+    "User": Array [
+      "2",
+    ],
+  },
+}
+`;
