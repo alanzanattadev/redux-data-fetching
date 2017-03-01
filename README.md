@@ -4,6 +4,8 @@ If you're looking for an alternative to Relay based on Redux and Normalizr you'r
 
 My goal is to provide you a flexible way to store data by organizing them by entities.
 
+GraphQL Schema system is powerful enough to be the base schema for convertions.
+
 ## How it works
 
 It converts your GraphQLSchema to a Normalizr one, and merges data for you. You only have to dispatch some actions with the provided action creators, and use the HOC GraphQLConnecter to send data to your components. It will fetch data when needed automatically.
@@ -95,7 +97,7 @@ export default actions;
 
 Everything is based on your GraphQL types, so be careful on naming.
 
-### Actions
+#### Actions
 
 Dispatch a packageData action to manually dispatch some data. You have to send them organized by entities but not normalized. It can be an array of entities or simple entities
 ```javascript
