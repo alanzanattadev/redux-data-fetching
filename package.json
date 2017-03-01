@@ -1,10 +1,11 @@
 {
   "name": "redux-data-fetching",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Redux and Normalizr based data managment utilities",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack"
   },
   "keywords": [
     "data",
@@ -15,9 +16,10 @@
   "author": "alanzanattadev",
   "license": "ISC",
   "devDependencies": {
+    "babel-core": "^6.23.1",
     "babel-jest": "^13.0.0",
-    "babel-loader": "^6.2.4",
-    "babel-preset-es2015": "^6.9.0",
+    "babel-loader": "^6.3.2",
+    "babel-preset-es2015": "^6.22.0",
     "babel-preset-react": "^6.11.1",
     "enzyme": "^2.5.1",
     "flow-bin": "^0.40.0",
@@ -29,7 +31,7 @@
     "redux": "^3.5.2",
     "redux-request-state": "github:alanzanattadev/redux-request-state",
     "redux-thunk": "^2.1.0",
-    "webpack": "^1.13.1",
+    "webpack": "2",
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
