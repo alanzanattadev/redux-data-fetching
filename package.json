@@ -1,8 +1,8 @@
 {
   "name": "redux-data-fetching",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Redux and Normalizr based data managment utilities",
-  "main": "dist/index.js",
+  "main": "dist/bundle.js",
   "scripts": {
     "test": "jest",
     "build": "webpack"
