@@ -90,6 +90,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.createEntitiesForTypes = createEntitiesForTypes;
 exports.getDefinitionOfType = getDefinitionOfType;
 exports.addDefinitionsForTypes = addDefinitionsForTypes;
+exports.getConvertersFromSchema = getConvertersFromSchema;
+exports.getDataFromResponse = getDataFromResponse;
 exports.graphQLizr = graphQLizr;
 
 var _normalizr = __webpack_require__(2);
@@ -140,14 +142,30 @@ function addDefinitionsForTypes(typesMap, entities) {
   });
 }
 
+function getConvertersFromSchema(schema) {
+  return Object.keys(schema._queryType._fields).reduce(function (red, field) {
+    var type = schema._queryType._fields[field].type;
+    var entityType = void 0;
+    if (type.ofType) entityType = type.ofType.name;else entityType = type.name;
+    return Object.assign({}, red, _defineProperty({}, field, entityType));
+  }, {});
+}
+
+function getDataFromResponse(converters, data) {
+  return Object.keys(data).reduce(function (red, key) {
+    return Object.assign({}, red, _defineProperty({}, converters[key], Array.isArray(data[key]) ? data[key] : [data[key]]));
+  }, {});
+}
+
 function graphQLizr(schema) {
   var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
       _ref$markers = _ref.markers,
       markers = _ref$markers === undefined ? ['id'] : _ref$markers;
 
   var entities = createEntitiesForTypes(schema._typeMap, markers);
+  var converters = getConvertersFromSchema(schema);
   addDefinitionsForTypes(schema._typeMap, entities);
-  return entities;
+  return { entities: entities, converters: converters };
 }
 
 /***/ }),
@@ -5470,8 +5488,8 @@ function configure(graphQLSchema) {
   var actions = (0, _actions2.default)();
   return {
     actions: actions,
-    middleware: (0, _middleware2.default)(graphQLSchema, actions),
-    reducer: (0, _reducer2.default)(normalizrModel)
+    middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel),
+    reducer: (0, _reducer2.default)(normalizrModel.entities)
   };
 }
 
@@ -5668,14 +5686,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = function (schema, actions) {
+exports.default = function (schema, actions, normalizrModel) {
   return function (store) {
     return function (next) {
       return function (action) {
         if (action.graphql) {
           (0, _graphql.graphql)(schema, action.payload).then(function (result) {
             if (result.errors === undefined) {
-              store.dispatch(actions.packageData(result.data));
+              store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data)));
             } else {
               store.dispatch(actions.notifyError(result.errors, action.payload));
             }
@@ -5689,6 +5707,8 @@ exports.default = function (schema, actions) {
 };
 
 var _graphql = __webpack_require__(5);
+
+var _graphqlTypesConverters = __webpack_require__(0);
 
 ;
 

@@ -2,38 +2,70 @@
 
 exports[`Converters To normalizr Schema to normalizr model should convert basic schema correctly 1`] = `
 Object {
-  "Skill": EntitySchema {
-    "_getId": [Function],
-    "_idAttribute": "id",
-    "_key": "Skill",
-    "_mergeStrategy": [Function],
-    "_processStrategy": [Function],
-    "schema": Object {
-      "target": EntitySchema {
-        "_getId": [Function],
-        "_idAttribute": "id",
-        "_key": "User",
-        "_mergeStrategy": [Function],
-        "_processStrategy": [Function],
-        "schema": Object {
-          "friends": Array [
-            [Circular],
-          ],
+  "converters": Object {
+    "skills": "Skill",
+    "user": "User",
+    "users": "User",
+  },
+  "entities": Object {
+    "Skill": EntitySchema {
+      "_getId": [Function],
+      "_idAttribute": "id",
+      "_key": "Skill",
+      "_mergeStrategy": [Function],
+      "_processStrategy": [Function],
+      "schema": Object {
+        "target": EntitySchema {
+          "_getId": [Function],
+          "_idAttribute": "id",
+          "_key": "User",
+          "_mergeStrategy": [Function],
+          "_processStrategy": [Function],
+          "schema": Object {
+            "friends": Array [
+              [Circular],
+            ],
+          },
         },
       },
     },
-  },
-  "User": EntitySchema {
-    "_getId": [Function],
-    "_idAttribute": "id",
-    "_key": "User",
-    "_mergeStrategy": [Function],
-    "_processStrategy": [Function],
-    "schema": Object {
-      "friends": Array [
-        [Circular],
-      ],
+    "User": EntitySchema {
+      "_getId": [Function],
+      "_idAttribute": "id",
+      "_key": "User",
+      "_mergeStrategy": [Function],
+      "_processStrategy": [Function],
+      "schema": Object {
+        "friends": Array [
+          [Circular],
+        ],
+      },
     },
   },
+}
+`;
+
+exports[`Converters To normalizr Schema to normalizr model should convert basic schema correctly 2`] = `
+Object {
+  "Skill": Array [
+    Object {
+      "id": "2",
+    },
+  ],
+  "User": Array [
+    Object {
+      "id": "1",
+    },
+  ],
+}
+`;
+
+exports[`Converters To normalizr Schema to normalizr model should convert basic schema correctly 3`] = `
+Object {
+  "User": Array [
+    Object {
+      "id": "2",
+    },
+  ],
 }
 `;
