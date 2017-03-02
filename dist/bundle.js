@@ -5675,7 +5675,7 @@ exports.default = function (schema, actions) {
         if (action.graphql) {
           (0, _graphql.graphql)(schema, action.payload).then(function (result) {
             if (result.errors === undefined) {
-              store.dispatch(actions.packageDate(result.data));
+              store.dispatch(actions.packageData(result.data));
             } else {
               store.dispatch(actions.notifyError(result.errors, action.payload));
             }
