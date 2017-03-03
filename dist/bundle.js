@@ -5489,7 +5489,8 @@ function configure(graphQLSchema) {
   return {
     actions: actions,
     middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel),
-    reducer: (0, _reducer2.default)(normalizrModel.entities)
+    reducer: (0, _reducer2.default)(normalizrModel.entities),
+    normalizrModel: normalizrModel
   };
 }
 
