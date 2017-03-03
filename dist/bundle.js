@@ -5753,7 +5753,7 @@ function configureReducer(normalizrTypes) {
         var normalizrModel = Object.keys(action.payload).reduce(function (red, key) {
           return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload[key]) == 'object' && Array.isArray(action.payload[key]) ? [normalizrTypes[key]] : normalizrTypes[key]));
         }, {});
-        var normalized = (0, _normalizr.normalize)(action.payload, normalizrModel);
+        var normalized = (0, _normalizr.normalize)(JSON.parse(JSON.stringify(action.payload)), normalizrModel);
         return state.update('entities', function (entities) {
           return entities.mergeDeep((0, _immutable.fromJS)(normalized.entities));
         }).update('result', function (result) {
