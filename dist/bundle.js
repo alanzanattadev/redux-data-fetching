@@ -82,26 +82,31 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 
-'use babel';
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createEntitiesForTypes = createEntitiesForTypes;
+exports.getRecordSchemaForType = getRecordSchemaForType;
+exports.createRecordsForTypes = createRecordsForTypes;
 exports.getDefinitionOfType = getDefinitionOfType;
 exports.addDefinitionsForTypes = addDefinitionsForTypes;
 exports.getConvertersFromSchema = getConvertersFromSchema;
 exports.getDataFromResponse = getDataFromResponse;
 exports.graphQLizr = graphQLizr;
+exports.graphQLRecordr = graphQLRecordr;
 
 var _normalizr = __webpack_require__(2);
 
 var _graphql = __webpack_require__(5);
 
+var _immutable = __webpack_require__(1);
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function isGraphQLIntegratedType(typeName) {
-  return ['String', 'Boolean', 'Int', 'ID', 'Float', '__Schema', '__Type', '__TypeKind', '__Field', '__InputValue', '__EnumValue', '__Directive', '__DirectiveLocation'].includes(typeName);
+  return ["String", "Boolean", "Int", "ID", "Float", "__Schema", "__Type", "__TypeKind", "__Field", "__InputValue", "__EnumValue", "__Directive", "__DirectiveLocation"].includes(typeName);
 }
 
 function isEntity(graphQLType, markers) {
@@ -116,8 +121,20 @@ function createEntitiesForTypes(typesMap, markers) {
   }, {});
 }
 
+function getRecordSchemaForType(type) {
+  return Object.keys(type._fields).reduce(function (red, fieldName) {
+    return Object.assign({}, red, _defineProperty({}, fieldName, null));
+  }, {});
+}
+
+function createRecordsForTypes(typesMap) {
+  return Object.keys(typesMap).reduce(function (red, typeName) {
+    return isGraphQLIntegratedType(typeName) || !typesMap[typeName]._fields ? red : Object.assign(red, _defineProperty({}, typeName, (0, _immutable.Record)(getRecordSchemaForType(typesMap[typeName]), typeName)));
+  }, {});
+}
+
 function getDefinitionOfType(graphQLType, entities) {
-  if ('_fields' in graphQLType) {
+  if ("_fields" in graphQLType) {
     var fields = Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
       var field = graphQLType._fields[fieldName];
       if (field.type.name in entities) return Object.assign({}, red, _defineProperty({}, fieldName, entities[field.type.name]));else {
@@ -126,7 +143,7 @@ function getDefinitionOfType(graphQLType, entities) {
       }
     }, {});
     if (Object.keys(fields).length > 0) return fields;else return undefined;
-  } else if ('ofType' in graphQLType) {
+  } else if ("ofType" in graphQLType) {
     if (graphQLType.ofType.name in entities) return [entities[graphQLType.ofType.name]];else return undefined;
   } else {
     return undefined;
@@ -160,12 +177,17 @@ function getDataFromResponse(converters, data) {
 function graphQLizr(schema) {
   var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
       _ref$markers = _ref.markers,
-      markers = _ref$markers === undefined ? ['id'] : _ref$markers;
+      markers = _ref$markers === undefined ? ["id"] : _ref$markers;
 
   var entities = createEntitiesForTypes(schema._typeMap, markers);
   var converters = getConvertersFromSchema(schema);
   addDefinitionsForTypes(schema._typeMap, entities);
   return { entities: entities, converters: converters };
+}
+
+function graphQLRecordr(schema) {
+  var records = createRecordsForTypes(schema._typeMap);
+  return records;
 }
 
 /***/ }),
@@ -23411,6 +23433,12 @@ Object.defineProperty(exports, 'graphQLizr', {
   enumerable: true,
   get: function get() {
     return _graphqlTypesConverters.graphQLizr;
+  }
+});
+Object.defineProperty(exports, 'graphQLRecordr', {
+  enumerable: true,
+  get: function get() {
+    return _graphqlTypesConverters.graphQLRecordr;
   }
 });
 

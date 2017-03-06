@@ -1,5 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Converters To immutable records schema to immutable records should converts basic schema correctly 1`] = `
+Object {
+  "RootQueryType": Object {
+    "skills": null,
+    "user": null,
+    "users": null,
+  },
+  "Skill": Object {
+    "id": null,
+    "power": null,
+    "target": null,
+  },
+  "User": Object {
+    "friends": null,
+    "id": null,
+    "name": null,
+  },
+}
+`;
+
 exports[`Converters To normalizr Schema to normalizr model should convert basic schema correctly 1`] = `
 Object {
   "converters": Object {
