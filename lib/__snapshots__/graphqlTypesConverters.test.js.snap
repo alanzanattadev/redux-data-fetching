@@ -1,21 +1,53 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Converters To immutable records entities to immutable records should converts basic entities correctly 1`] = `
+Object {
+  "Skill": Object {
+    "1": Object {
+      "id": 1,
+      "power": 8,
+      "target": 2,
+    },
+  },
+  "User": Object {
+    "2": Object {
+      "friends": Array [
+        3,
+        4,
+      ],
+      "id": 2,
+      "name": "Alan",
+    },
+    "3": Object {
+      "friends": undefined,
+      "id": 3,
+      "name": "Antoine",
+    },
+    "4": Object {
+      "friends": undefined,
+      "id": 4,
+      "name": "Joffrey",
+    },
+  },
+}
+`;
+
 exports[`Converters To immutable records schema to immutable records should converts basic schema correctly 1`] = `
 Object {
   "RootQueryType": Object {
-    "skills": null,
-    "user": null,
-    "users": null,
+    "skills": undefined,
+    "user": undefined,
+    "users": undefined,
   },
   "Skill": Object {
-    "id": null,
-    "power": null,
-    "target": null,
+    "id": undefined,
+    "power": undefined,
+    "target": undefined,
   },
   "User": Object {
-    "friends": null,
-    "id": null,
-    "name": null,
+    "friends": undefined,
+    "id": undefined,
+    "name": undefined,
   },
 }
 `;

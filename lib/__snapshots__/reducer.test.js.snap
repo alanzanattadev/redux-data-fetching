@@ -17,6 +17,7 @@ Object {
     },
     "User": Object {
       "1": Object {
+        "age": undefined,
         "friends": Array [
           2,
           3,
@@ -25,6 +26,7 @@ Object {
         "name": "Alan",
       },
       "2": Object {
+        "age": undefined,
         "friends": Array [
           3,
         ],
@@ -33,6 +35,7 @@ Object {
       },
       "3": Object {
         "age": 28,
+        "friends": undefined,
         "id": 3,
         "name": "Joffrey",
       },
@@ -82,7 +85,10 @@ Object {
   "entities": Object {
     "User": Object {
       "2": Object {
+        "age": undefined,
+        "friends": undefined,
         "id": "2",
+        "name": undefined,
       },
     },
   },

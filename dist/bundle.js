@@ -87,6 +87,9 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 exports.createEntitiesForTypes = createEntitiesForTypes;
 exports.getRecordSchemaForType = getRecordSchemaForType;
 exports.createRecordsForTypes = createRecordsForTypes;
@@ -96,6 +99,8 @@ exports.getConvertersFromSchema = getConvertersFromSchema;
 exports.getDataFromResponse = getDataFromResponse;
 exports.graphQLizr = graphQLizr;
 exports.graphQLRecordr = graphQLRecordr;
+exports.convertsEntityToRecord = convertsEntityToRecord;
+exports.convertsNormalizedEntitiesToRecords = convertsNormalizedEntitiesToRecords;
 
 var _normalizr = __webpack_require__(2);
 
@@ -123,7 +128,7 @@ function createEntitiesForTypes(typesMap, markers) {
 
 function getRecordSchemaForType(type) {
   return Object.keys(type._fields).reduce(function (red, fieldName) {
-    return Object.assign({}, red, _defineProperty({}, fieldName, null));
+    return Object.assign({}, red, _defineProperty({}, fieldName, undefined));
   }, {});
 }
 
@@ -188,6 +193,31 @@ function graphQLizr(schema) {
 function graphQLRecordr(schema) {
   var records = createRecordsForTypes(schema._typeMap);
   return records;
+}
+
+function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
+  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object") return entity;
+  return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
+    var field = entity[key];
+    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false) {
+      console.log("OBJ", graphQLSchema._typeMap[type]._fields[field.name].name);
+      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[field.name].name, graphQLSchema, recordsTypes)));
+    } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
+      return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
+        return (typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" ? convertsEntityToRecord(v, graphQLSchema._typeMap[type]._fields[v.name].ofType.name, graphQLSchema, recordsTypes) : v;
+      })));
+    } else {
+      return Object.assign({}, red, _defineProperty({}, key, field));
+    }
+  }, {}));
+}
+
+function convertsNormalizedEntitiesToRecords(entities, recordsTypes, graphQLSchema) {
+  return Object.keys(entities).reduce(function (red, typeName) {
+    return Object.assign({}, red, _defineProperty({}, typeName, Object.keys(entities[typeName]).reduce(function (reduction, entityId) {
+      return Object.assign({}, reduction, _defineProperty({}, entityId, convertsEntityToRecord(entities[typeName][entityId], typeName, graphQLSchema, recordsTypes)));
+    }, {})));
+  }, {});
 }
 
 /***/ }),
@@ -5507,12 +5537,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function configure(graphQLSchema) {
   var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLSchema);
+  var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLSchema);
   var actions = (0, _actions2.default)();
   return {
     actions: actions,
     middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel),
-    reducer: (0, _reducer2.default)(normalizrModel.entities),
-    normalizrModel: normalizrModel
+    reducer: (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLSchema),
+    normalizrModel: normalizrModel,
+    recordsModel: recordsModel
   };
 }
 
@@ -5765,7 +5797,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function configureReducer(normalizrTypes) {
+function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
   return function reducer() {
     var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _immutable.Map)().set('entities', (0, _immutable.Map)()).set('result', (0, _immutable.Map)());
     var action = arguments[1];
@@ -5777,7 +5809,9 @@ function configureReducer(normalizrTypes) {
         }, {});
         var normalized = (0, _normalizr.normalize)(JSON.parse(JSON.stringify(action.payload)), normalizrModel);
         return state.update('entities', function (entities) {
-          return entities.mergeDeep((0, _immutable.fromJS)(normalized.entities));
+          return entities.mergeDeepWith(function (a, b) {
+            return b === undefined ? a : b;
+          }, (0, _graphqlTypesConverters.convertsNormalizedEntitiesToRecords)(normalized.entities, recordsTypes, graphQLSchema));
         }).update('result', function (result) {
           return Object.keys(normalized.result).reduce(function (red, key) {
             return red.update(key, (0, _immutable.Set)(), function (v) {
