@@ -196,14 +196,14 @@ function graphQLRecordr(schema) {
 }
 
 function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
-  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object") return entity;
+  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object" || entity == null) return entity;
   return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
     var field = entity[key];
     if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
-      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[field.name].name, graphQLSchema, recordsTypes)));
+      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[key].type.name, graphQLSchema, recordsTypes)));
     } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
       return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
-        return (typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" ? convertsEntityToRecord(v, graphQLSchema._typeMap[type]._fields[v.name].ofType.name, graphQLSchema, recordsTypes) : v;
+        return (typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" ? convertsEntityToRecord(v, graphQLSchema._typeMap[type]._fields[key].type.ofType.name, graphQLSchema, recordsTypes) : v;
       })));
     } else {
       return Object.assign({}, red, _defineProperty({}, key, field));
