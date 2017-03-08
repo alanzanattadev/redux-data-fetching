@@ -199,8 +199,7 @@ function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
   if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object") return entity;
   return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
     var field = entity[key];
-    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false) {
-      console.log("OBJ", graphQLSchema._typeMap[type]._fields[field.name].name);
+    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
       return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[field.name].name, graphQLSchema, recordsTypes)));
     } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
       return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
