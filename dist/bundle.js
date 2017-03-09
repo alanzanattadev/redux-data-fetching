@@ -5772,7 +5772,7 @@ var _graphqlTypesConverters = __webpack_require__(0);
 
 "use strict";
 
-'use babel';
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -5798,33 +5798,37 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
   return function reducer() {
-    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _immutable.Map)().set('entities', (0, _immutable.Map)()).set('result', (0, _immutable.Map)());
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _immutable.Map)().set("entities", (0, _immutable.Map)()).set("result", (0, _immutable.Map)());
     var action = arguments[1];
 
     switch (action.type) {
-      case 'DATA_RECEIVED':
+      case "DATA_RECEIVED":
         var normalizrModel = Object.keys(action.payload).reduce(function (red, key) {
-          return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload[key]) == 'object' && Array.isArray(action.payload[key]) ? [normalizrTypes[key]] : normalizrTypes[key]));
+          return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key]) ? [normalizrTypes[key]] : normalizrTypes[key]));
         }, {});
         var normalized = (0, _normalizr.normalize)(JSON.parse(JSON.stringify(action.payload)), normalizrModel);
-        return state.update('entities', function (entities) {
+        return state.update("entities", function (entities) {
           return entities.mergeDeepWith(function (a, b) {
             return b === undefined ? a : b;
           }, (0, _graphqlTypesConverters.convertsNormalizedEntitiesToRecords)(normalized.entities, recordsTypes, graphQLSchema));
-        }).update('result', function (result) {
+        }).update("result", function (result) {
           return Object.keys(normalized.result).reduce(function (red, key) {
             return red.update(key, (0, _immutable.Set)(), function (v) {
-              return v.concat(_typeof(normalized.result[key]) == 'object' && Array.isArray(normalized.result[key]) ? (0, _immutable.List)(normalized.result[key]) : _immutable.List.of(normalized.result[key])).map(function (v) {
+              return v.concat(_typeof(normalized.result[key]) == "object" && Array.isArray(normalized.result[key]) ? (0, _immutable.List)(normalized.result[key]).filter(function (v) {
+                return v != null;
+              }) : _immutable.List.of(normalized.result[key]).filter(function (v) {
+                return v != null;
+              })).map(function (v) {
                 return v.toString();
               });
             });
-          }, state.get('result'));
+          }, state.get("result"));
         });
-      case 'DATA_REMOVED':
+      case "DATA_REMOVED":
         return Object.keys(action.payload).reduce(function (red, key) {
-          return _typeof(action.payload[key]) == 'object' && Array.isArray(action.payload[key]) ? action.payload[key].reduce(function (reduction, value) {
-            return reduction.deleteIn(['entities', key, value.toString()]);
-          }, red) : red.deleteIn(['entities', key, action.payload[key].toString()]);
+          return _typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key]) ? action.payload[key].reduce(function (reduction, value) {
+            return reduction.deleteIn(["entities", key, value.toString()]);
+          }, red) : red.deleteIn(["entities", key, action.payload[key].toString()]);
         }, state);
       default:
         return state;
