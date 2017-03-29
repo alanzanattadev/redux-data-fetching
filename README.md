@@ -6,6 +6,8 @@ My goal is to provide you a flexible way to store data by organizing them by ent
 
 GraphQL Schema system is powerful enough to be the base schema for convertions.
 
+![Build Status](https://circleci.com/gh/veyo-care/redux-data-fetching.svg?&style=shield&circle-token=bc115cf5f1754f6a3b14c15fe147ed444bd9f872)
+
 ## How it works
 
 It converts your GraphQLSchema to a Normalizr one, and merges data for you. You only have to dispatch some actions with the provided action creators, and use the HOC GraphQLConnecter to send data to your components. It will fetch data when needed automatically.
