@@ -5804,7 +5804,9 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
     switch (action.type) {
       case "DATA_RECEIVED":
         var normalizrModel = Object.keys(action.payload).reduce(function (red, key) {
-          return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key]) ? [normalizrTypes[key]] : normalizrTypes[key]));
+          var type = normalizrTypes[key];
+          if (type === undefined) throw new Error("You can't normalize a type which is not an Entity. An Entity is a type with an id attribut. You may have defined a GraphQL root query type with a route that has a type without any id.");
+          return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key]) ? [type] : type));
         }, {});
         var normalized = (0, _normalizr.normalize)(JSON.parse(JSON.stringify(action.payload)), normalizrModel);
         return state.update("entities", function (entities) {
