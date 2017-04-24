@@ -79,7 +79,7 @@ Get the utility set
 ```javascript
 import {configure} from 'redux-data-fetching';
 
-let {reducer, middleware, actions} = configure(graphQLSchema);
+let {reducer, middleware, actions} = configure(graphQLSchema, {somecontext: "ok", api: {}});
 
 createStore(combineReducers({
   data: reducer,

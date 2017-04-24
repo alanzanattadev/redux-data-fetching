@@ -5534,13 +5534,13 @@ var _normalizr = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function configure(graphQLSchema) {
+function configure(graphQLSchema, context) {
   var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLSchema);
   var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLSchema);
   var actions = (0, _actions2.default)();
   return {
     actions: actions,
-    middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel),
+    middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel, context),
     reducer: (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLSchema),
     normalizrModel: normalizrModel,
     recordsModel: recordsModel
@@ -5740,13 +5740,18 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = function (schema, actions, normalizrModel) {
+exports.default = function (schema, actions, normalizrModel, context) {
   return function (store) {
     return function (next) {
       return function (action) {
         if (action.graphql) {
-          (0, _graphql.graphql)(schema, action.payload).then(function (result) {
+          (0, _graphql.graphql)(schema, action.payload, undefined, {
+            store: store,
+            dependencies: context
+          }).then(function (result) {
             if (result.errors === undefined) {
+              console.log(normalizrModel, result.data);
+              console.log((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data));
               store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data)));
             } else {
               store.dispatch(actions.notifyError(result.errors, action.payload));
