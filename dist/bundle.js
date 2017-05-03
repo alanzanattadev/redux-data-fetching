@@ -5750,8 +5750,6 @@ exports.default = function (schema, actions, normalizrModel, context) {
             dependencies: context
           }).then(function (result) {
             if (result.errors === undefined) {
-              console.log(normalizrModel, result.data);
-              console.log((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data));
               store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data)));
             } else {
               store.dispatch(actions.notifyError(result.errors, action.payload));
