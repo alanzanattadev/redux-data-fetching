@@ -5509,7 +5509,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
 
 "use strict";
 
-'use babel';
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -5553,7 +5553,7 @@ function configure(graphQLSchema, context) {
 
 "use strict";
 
-'use babel';
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -5595,19 +5595,19 @@ function GraphQLConnecter(mapPropsToNeeds, mapCacheToProps) {
       }
 
       _createClass(GraphQLContainer, [{
-        key: 'componentDidMount',
+        key: "componentDidMount",
         value: function componentDidMount() {
           this.getNeeds();
         }
       }, {
-        key: 'componentDidUpdate',
+        key: "componentDidUpdate",
         value: function componentDidUpdate(prevProps, prevState) {
           if (mapPropsToNeeds(this.props) != mapPropsToNeeds(prevProps) || shouldRefetch(this.props, prevProps)) {
             this.getNeeds();
           }
         }
       }, {
-        key: 'getNeeds',
+        key: "getNeeds",
         value: function getNeeds() {
           this.props.dispatch({
             type: "GRAPHQL_FETCH",
@@ -5616,7 +5616,7 @@ function GraphQLConnecter(mapPropsToNeeds, mapCacheToProps) {
           });
         }
       }, {
-        key: 'render',
+        key: "render",
         value: function render() {
           if (!this.props.data) throw new Error("GraphQLConnecter must get the cache reducer as a props named 'data'");
           if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
@@ -5635,7 +5635,7 @@ function GraphQLConnecter(mapPropsToNeeds, mapCacheToProps) {
 
 "use strict";
 
-'use babel';
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -5659,23 +5659,29 @@ function getImmutableSelector(graphQLQuery) {
     return arg.name.value == "id";
   }))) {
     rootFieldParamID = idArg.value.value;
-    immutableSelector.push({ type: 'id', value: rootFieldParamID });
+    immutableSelector.push({ type: "id", value: rootFieldParamID });
   }
   return immutableSelector;
-};
+}
 
 function convertIDsToIndex(data, selector) {
   return selector.reduce(function (reduction, value) {
     if (reduction.newSelector.count() > 0 && reduction.newSelector.last() === null) return reduction;else {
-      if (typeof value == 'string' || typeof value == 'number') {
-        return { rootData: reduction.rootData.get(value), newSelector: reduction.newSelector.push(value) };
+      if (typeof value == "string" || typeof value == "number") {
+        return {
+          rootData: reduction.rootData.get(value),
+          newSelector: reduction.newSelector.push(value)
+        };
       } else {
-        if (value.type == 'id') {
+        if (value.type == "id") {
           var selectedIndex = reduction.rootData.findIndex(function (item) {
-            return item.get('id') == value.value;
+            return item.get("id") == value.value;
           });
           if (selectedIndex == -1) selectedIndex = null;
-          return { rootData: selectedIndex ? reduction.rootData.get(selectedIndex) : null, newSelector: reduction.newSelector.push(selectedIndex) };
+          return {
+            rootData: selectedIndex ? reduction.rootData.get(selectedIndex) : null,
+            newSelector: reduction.newSelector.push(selectedIndex)
+          };
         } else {
           return reduction;
         }
@@ -5696,7 +5702,7 @@ function selectData(data, query) {
 
 "use strict";
 
-'use babel';
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -5727,7 +5733,7 @@ function configureActions() {
       };
     }
   };
-};
+}
 
 /***/ }),
 /* 10 */
@@ -5766,8 +5772,6 @@ exports.default = function (schema, actions, normalizrModel, context) {
 var _graphql = __webpack_require__(5);
 
 var _graphqlTypesConverters = __webpack_require__(0);
-
-;
 
 /***/ }),
 /* 11 */
@@ -23453,7 +23457,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _hoc = __webpack_require__(7);
 
-Object.defineProperty(exports, 'GraphQLConnecter', {
+Object.defineProperty(exports, "GraphQLConnecter", {
   enumerable: true,
   get: function get() {
     return _interopRequireDefault(_hoc).default;
@@ -23462,7 +23466,7 @@ Object.defineProperty(exports, 'GraphQLConnecter', {
 
 var _configurer = __webpack_require__(6);
 
-Object.defineProperty(exports, 'configure', {
+Object.defineProperty(exports, "configure", {
   enumerable: true,
   get: function get() {
     return _configurer.configure;
@@ -23471,13 +23475,13 @@ Object.defineProperty(exports, 'configure', {
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
-Object.defineProperty(exports, 'graphQLizr', {
+Object.defineProperty(exports, "graphQLizr", {
   enumerable: true,
   get: function get() {
     return _graphqlTypesConverters.graphQLizr;
   }
 });
-Object.defineProperty(exports, 'graphQLRecordr', {
+Object.defineProperty(exports, "graphQLRecordr", {
   enumerable: true,
   get: function get() {
     return _graphqlTypesConverters.graphQLRecordr;
@@ -23486,7 +23490,7 @@ Object.defineProperty(exports, 'graphQLRecordr', {
 
 var _selectors = __webpack_require__(8);
 
-Object.defineProperty(exports, 'selectData', {
+Object.defineProperty(exports, "selectData", {
   enumerable: true,
   get: function get() {
     return _selectors.selectData;
