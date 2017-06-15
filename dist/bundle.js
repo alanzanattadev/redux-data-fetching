@@ -197,9 +197,17 @@ function graphQLRecordr(schema) {
 
 function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
   if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object" || entity == null) return entity;
+  if (Array.isArray(entity) === true) {
+    console.error("Trying to convert", entity, "into a Record of type", type);
+    throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
+  }
   return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
     var field = entity[key];
     if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
+      if (graphQLSchema._typeMap[type] == null || graphQLSchema._typeMap[type]._fields == null || graphQLSchema._typeMap[type]._fields[key] == null) {
+        console.error("Error trying to convert entity", entity, "to record of type", type);
+        throw new Error("Error has been detected when trying to access the field with key " + key + ", if key is a number you may have wrapped data, sent to packageData, in an array where you shouldn't");
+      }
       return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[key].type.name, graphQLSchema, recordsTypes)));
     } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
       return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {

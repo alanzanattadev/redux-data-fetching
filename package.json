@@ -1,6 +1,6 @@
 {
   "name": "redux-data-fetching",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Redux and Normalizr based data managment utilities",
   "main": "dist/bundle.js",
   "scripts": {
