@@ -201,3 +201,5 @@ params:
 
     shouldRefetch(props: any, prevProps: any): boolean
   ```
+
+Your wrapped component also receive a prop "refetch" that you can call to manually launch a data refresh.

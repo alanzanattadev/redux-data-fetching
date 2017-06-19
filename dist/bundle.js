@@ -5626,9 +5626,15 @@ function GraphQLConnecter(mapPropsToNeeds, mapCacheToProps) {
       }, {
         key: "render",
         value: function render() {
+          var _this2 = this;
+
           if (!this.props.data) throw new Error("GraphQLConnecter must get the cache reducer as a props named 'data'");
           if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
-          return _react2.default.createElement(WrappedComponent, _extends({}, this.props, mapCacheToProps(this.props.data, this.props)));
+          return _react2.default.createElement(WrappedComponent, _extends({}, this.props, mapCacheToProps(this.props.data, this.props), {
+            refetch: function refetch() {
+              return _this2.getNeeds();
+            }
+          }));
         }
       }]);
 
