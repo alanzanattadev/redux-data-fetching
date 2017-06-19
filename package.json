@@ -5,7 +5,9 @@
   "main": "dist/bundle.js",
   "scripts": {
     "test": "jest",
-    "build": "webpack"
+    "test:watch": "jest --watch",
+    "build": "webpack",
+    "build:watch": "webpack --watch"
   },
   "keywords": [
     "data",
