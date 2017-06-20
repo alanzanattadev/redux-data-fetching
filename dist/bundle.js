@@ -5818,6 +5818,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
+  function warnBadIDRequest(type, supposedId) {
+    console.warn("You're trying to delete a key of bad type for type", type, ":", supposedId, ".Keys must be of type number, string or identified object eg: {id: 'key'}. Aborting request");
+  }
+
+  function getID(data) {
+    if (typeof data === "string") return data;else if (typeof data === "number") return data.toString();else if ((typeof data === "undefined" ? "undefined" : _typeof(data)) === "object" && data !== null) {
+      return getID(data.id);
+    } else {
+      return null;
+    }
+  }
+
   return function reducer() {
     var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _immutable.Map)().set("entities", (0, _immutable.Map)()).set("result", (0, _immutable.Map)());
     var action = arguments[1];
@@ -5849,9 +5861,25 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
         });
       case "DATA_REMOVED":
         return Object.keys(action.payload).reduce(function (red, key) {
-          return _typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key]) ? action.payload[key].reduce(function (reduction, value) {
-            return reduction.deleteIn(["entities", key, value.toString()]);
-          }, red) : red.deleteIn(["entities", key, action.payload[key].toString()]);
+          if (_typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key])) {
+            return action.payload[key].reduce(function (reduction, value) {
+              var id = getID(value);
+              if (id == null) {
+                warnBadIDRequest(key, value);
+                return reduction;
+              } else {
+                return reduction.deleteIn(["entities", key, id]);
+              }
+            }, red);
+          } else {
+            var _id = getID(action.payload[key]);
+            if (_id == null) {
+              warnBadIDRequest(key, action.payload[key]);
+              return red;
+            } else {
+              return red.deleteIn(["entities", key, _id]);
+            }
+          }
         }, state);
       default:
         return state;
