@@ -7,7 +7,7 @@
 		exports["ReduxDataFetching"] = factory(require("graphql"), require("react"));
 	else
 		root["ReduxDataFetching"] = factory(root[undefined], root["React"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_5__, __WEBPACK_EXTERNAL_MODULE_20__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_8__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -16,9 +16,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	function __webpack_require__(moduleId) {
 /******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-/******/
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
@@ -42,9 +42,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
 /******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
@@ -73,162 +70,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 21);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-"use babel";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-exports.createEntitiesForTypes = createEntitiesForTypes;
-exports.getRecordSchemaForType = getRecordSchemaForType;
-exports.createRecordsForTypes = createRecordsForTypes;
-exports.getDefinitionOfType = getDefinitionOfType;
-exports.addDefinitionsForTypes = addDefinitionsForTypes;
-exports.getConvertersFromSchema = getConvertersFromSchema;
-exports.getDataFromResponse = getDataFromResponse;
-exports.graphQLizr = graphQLizr;
-exports.graphQLRecordr = graphQLRecordr;
-exports.convertsEntityToRecord = convertsEntityToRecord;
-exports.convertsNormalizedEntitiesToRecords = convertsNormalizedEntitiesToRecords;
-
-var _normalizr = __webpack_require__(2);
-
-var _graphql = __webpack_require__(5);
-
-var _immutable = __webpack_require__(1);
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function isGraphQLIntegratedType(typeName) {
-  return ["String", "Boolean", "Int", "ID", "Float", "__Schema", "__Type", "__TypeKind", "__Field", "__InputValue", "__EnumValue", "__Directive", "__DirectiveLocation"].includes(typeName);
-}
-
-function isEntity(graphQLType, markers) {
-  return graphQLType._fields && Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
-    return red || markers.includes(fieldName);
-  }, false);
-}
-
-function createEntitiesForTypes(typesMap, markers) {
-  return Object.keys(typesMap).reduce(function (red, typeName) {
-    return isGraphQLIntegratedType(typeName) || !isEntity(typesMap[typeName], markers) ? red : Object.assign(red, _defineProperty({}, typeName, new _normalizr.schema.Entity(typeName)), {});
-  }, {});
-}
-
-function getRecordSchemaForType(type) {
-  return Object.keys(type._fields).reduce(function (red, fieldName) {
-    return Object.assign({}, red, _defineProperty({}, fieldName, undefined));
-  }, {});
-}
-
-function createRecordsForTypes(typesMap) {
-  return Object.keys(typesMap).reduce(function (red, typeName) {
-    return isGraphQLIntegratedType(typeName) || !typesMap[typeName]._fields ? red : Object.assign(red, _defineProperty({}, typeName, (0, _immutable.Record)(getRecordSchemaForType(typesMap[typeName]), typeName)));
-  }, {});
-}
-
-function getDefinitionOfType(graphQLType, entities) {
-  if ("_fields" in graphQLType) {
-    var fields = Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
-      var field = graphQLType._fields[fieldName];
-      if (field.type.name in entities) return Object.assign({}, red, _defineProperty({}, fieldName, entities[field.type.name]));else {
-        var definition = getDefinitionOfType(field.type, entities);
-        if (definition) return Object.assign({}, red, _defineProperty({}, fieldName, definition));else return red;
-      }
-    }, {});
-    if (Object.keys(fields).length > 0) return fields;else return undefined;
-  } else if ("ofType" in graphQLType) {
-    if (graphQLType.ofType.name in entities) return [entities[graphQLType.ofType.name]];else return undefined;
-  } else {
-    return undefined;
-  }
-}
-
-function addDefinitionsForTypes(typesMap, entities) {
-  Object.keys(typesMap).forEach(function (typeName) {
-    if (isGraphQLIntegratedType(typeName) === false && entities[typeName] instanceof _normalizr.schema.Entity) {
-      var definition = getDefinitionOfType(typesMap[typeName], entities);
-      entities[typeName].define(definition || {});
-    }
-  });
-}
-
-function getConvertersFromSchema(schema) {
-  return Object.keys(schema._queryType._fields).reduce(function (red, field) {
-    var type = schema._queryType._fields[field].type;
-    var entityType = void 0;
-    if (type.ofType) entityType = type.ofType.name;else entityType = type.name;
-    return Object.assign({}, red, _defineProperty({}, field, entityType));
-  }, {});
-}
-
-function getDataFromResponse(converters, data) {
-  return Object.keys(data).reduce(function (red, key) {
-    return Object.assign({}, red, _defineProperty({}, converters[key], Array.isArray(data[key]) ? data[key] : [data[key]]));
-  }, {});
-}
-
-function graphQLizr(schema) {
-  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-      _ref$markers = _ref.markers,
-      markers = _ref$markers === undefined ? ["id"] : _ref$markers;
-
-  var entities = createEntitiesForTypes(schema._typeMap, markers);
-  var converters = getConvertersFromSchema(schema);
-  addDefinitionsForTypes(schema._typeMap, entities);
-  return { entities: entities, converters: converters };
-}
-
-function graphQLRecordr(schema) {
-  var records = createRecordsForTypes(schema._typeMap);
-  return records;
-}
-
-function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
-  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object" || entity == null) return entity;
-  if (Array.isArray(entity) === true) {
-    console.error("Trying to convert", entity, "into a Record of type", type);
-    throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
-  }
-  return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
-    var field = entity[key];
-    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
-      if (graphQLSchema._typeMap[type] == null || graphQLSchema._typeMap[type]._fields == null || graphQLSchema._typeMap[type]._fields[key] == null) {
-        console.error("Error trying to convert entity", entity, "to record of type", type);
-        throw new Error("Error has been detected when trying to access the field with key " + key + ", if key is a number you may have wrapped data, sent to packageData, in an array where you shouldn't");
-      }
-      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[key].type.name, graphQLSchema, recordsTypes)));
-    } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
-      return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
-        return (typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" ? convertsEntityToRecord(v, graphQLSchema._typeMap[type]._fields[key].type.ofType.name, graphQLSchema, recordsTypes) : v;
-      })));
-    } else {
-      return Object.assign({}, red, _defineProperty({}, key, field));
-    }
-  }, {}));
-}
-
-function convertsNormalizedEntitiesToRecords(entities, recordsTypes, graphQLSchema) {
-  return Object.keys(entities).reduce(function (red, typeName) {
-    return Object.assign({}, red, _defineProperty({}, typeName, Object.keys(entities[typeName]).reduce(function (reduction, entityId) {
-      return Object.assign({}, reduction, _defineProperty({}, entityId, convertsEntityToRecord(entities[typeName][entityId], typeName, graphQLSchema, recordsTypes)));
-    }, {})));
-  }, {});
-}
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -5212,7 +5058,217 @@ function convertsNormalizedEntitiesToRecords(entities, recordsTypes, graphQLSche
 }));
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+"use babel";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.createEntitiesForTypes = createEntitiesForTypes;
+exports.getRecordSchemaForType = getRecordSchemaForType;
+exports.createRecordsForTypes = createRecordsForTypes;
+exports.getDefinitionOfType = getDefinitionOfType;
+exports.addDefinitionsForTypes = addDefinitionsForTypes;
+exports.getConvertersFromSchema = getConvertersFromSchema;
+exports.getDataFromResponse = getDataFromResponse;
+exports.graphQLizr = graphQLizr;
+exports.graphQLRecordr = graphQLRecordr;
+exports.convertsEntityToRecord = convertsEntityToRecord;
+exports.convertsNormalizedEntitiesToRecords = convertsNormalizedEntitiesToRecords;
+
+var _normalizr = __webpack_require__(4);
+
+var _graphql = __webpack_require__(3);
+
+var _immutable = __webpack_require__(0);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function isGraphQLIntegratedType(typeName) {
+  return ["String", "Boolean", "Int", "ID", "Float", "__Schema", "__Type", "__TypeKind", "__Field", "__InputValue", "__EnumValue", "__Directive", "__DirectiveLocation"].includes(typeName);
+}
+
+function isEntity(graphQLType, markers) {
+  return graphQLType._fields && Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
+    return red || markers.includes(fieldName);
+  }, false);
+}
+
+function createEntitiesForTypes(typesMap, markers) {
+  return Object.keys(typesMap).reduce(function (red, typeName) {
+    return isGraphQLIntegratedType(typeName) || !isEntity(typesMap[typeName], markers) ? red : Object.assign(red, _defineProperty({}, typeName, new _normalizr.schema.Entity(typeName)), {});
+  }, {});
+}
+
+function getRecordSchemaForType(type) {
+  return Object.keys(type._fields).reduce(function (red, fieldName) {
+    return Object.assign({}, red, _defineProperty({}, fieldName, undefined));
+  }, {});
+}
+
+function createRecordsForTypes(typesMap) {
+  return Object.keys(typesMap).reduce(function (red, typeName) {
+    return isGraphQLIntegratedType(typeName) || !typesMap[typeName]._fields ? red : Object.assign(red, _defineProperty({}, typeName, (0, _immutable.Record)(getRecordSchemaForType(typesMap[typeName]), typeName)));
+  }, {});
+}
+
+function getDefinitionOfType(graphQLType, entities) {
+  if ("_fields" in graphQLType) {
+    var fields = Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
+      var field = graphQLType._fields[fieldName];
+      if (field.type.name in entities) return Object.assign({}, red, _defineProperty({}, fieldName, entities[field.type.name]));else {
+        var definition = getDefinitionOfType(field.type, entities);
+        if (definition) return Object.assign({}, red, _defineProperty({}, fieldName, definition));else return red;
+      }
+    }, {});
+    if (Object.keys(fields).length > 0) return fields;else return undefined;
+  } else if ("ofType" in graphQLType) {
+    if (graphQLType.ofType.name in entities) return [entities[graphQLType.ofType.name]];else return undefined;
+  } else {
+    return undefined;
+  }
+}
+
+function addDefinitionsForTypes(typesMap, entities) {
+  Object.keys(typesMap).forEach(function (typeName) {
+    if (isGraphQLIntegratedType(typeName) === false && entities[typeName] instanceof _normalizr.schema.Entity) {
+      var definition = getDefinitionOfType(typesMap[typeName], entities);
+      entities[typeName].define(definition || {});
+    }
+  });
+}
+
+function getConvertersFromSchema(schema) {
+  return Object.keys(schema._queryType._fields).reduce(function (red, field) {
+    var type = schema._queryType._fields[field].type;
+    var entityType = void 0;
+    if (type.ofType) entityType = type.ofType.name;else entityType = type.name;
+    return Object.assign({}, red, _defineProperty({}, field, entityType));
+  }, {});
+}
+
+function getDataFromResponse(converters, data) {
+  return Object.keys(data).reduce(function (red, key) {
+    return Object.assign({}, red, _defineProperty({}, converters[key], Array.isArray(data[key]) ? data[key] : [data[key]]));
+  }, {});
+}
+
+function graphQLizr(schema) {
+  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+      _ref$markers = _ref.markers,
+      markers = _ref$markers === undefined ? ["id"] : _ref$markers;
+
+  var entities = createEntitiesForTypes(schema._typeMap, markers);
+  var converters = getConvertersFromSchema(schema);
+  addDefinitionsForTypes(schema._typeMap, entities);
+  return { entities: entities, converters: converters };
+}
+
+function graphQLRecordr(schema) {
+  var records = createRecordsForTypes(schema._typeMap);
+  return records;
+}
+
+function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
+  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object" || entity == null) return entity;
+  if (Array.isArray(entity) === true) {
+    console.error("Trying to convert", entity, "into a Record of type", type);
+    throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
+  }
+  return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
+    var field = entity[key];
+    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
+      if (graphQLSchema._typeMap[type] == null || graphQLSchema._typeMap[type]._fields == null || graphQLSchema._typeMap[type]._fields[key] == null) {
+        console.error("Error trying to convert entity", entity, "to record of type", type);
+        throw new Error("Error has been detected when trying to access the field with key " + key + ", if key is a number you may have wrapped data, sent to packageData, in an array where you shouldn't");
+      }
+      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[key].type.name, graphQLSchema, recordsTypes)));
+    } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
+      return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
+        return (typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" ? convertsEntityToRecord(v, graphQLSchema._typeMap[type]._fields[key].type.ofType.name, graphQLSchema, recordsTypes) : v;
+      })));
+    } else {
+      return Object.assign({}, red, _defineProperty({}, key, field));
+    }
+  }, {}));
+}
+
+function convertsNormalizedEntitiesToRecords(entities, recordsTypes, graphQLSchema) {
+  return Object.keys(entities).reduce(function (red, typeName) {
+    return Object.assign({}, red, _defineProperty({}, typeName, Object.keys(entities[typeName]).reduce(function (reduction, entityId) {
+      return Object.assign({}, reduction, _defineProperty({}, entityId, convertsEntityToRecord(entities[typeName][entityId], typeName, graphQLSchema, recordsTypes)));
+    }, {})));
+  }, {});
+}
+
+/***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isImmutable = isImmutable;
+exports.denormalizeImmutable = denormalizeImmutable;
+/**
+ * Helpers to enable Immutable compatibility *without* bringing in
+ * the 'immutable' package as a dependency.
+ */
+
+/**
+ * Check if an object is immutable by checking if it has a key specific
+ * to the immutable library.
+ *
+ * @param  {any} object
+ * @return {bool}
+ */
+function isImmutable(object) {
+  return !!(object && (object.hasOwnProperty('__ownerID') || // Immutable.Map
+  object._map && object._map.hasOwnProperty('__ownerID') // Immutable.Record
+  ));
+}
+
+/**
+ * Denormalize an immutable entity.
+ *
+ * @param  {Schema} schema
+ * @param  {Immutable.Map|Immutable.Record} input
+ * @param  {function} unvisit
+ * @param  {function} getDenormalizedEntity
+ * @return {Immutable.Map|Immutable.Record}
+ */
+function denormalizeImmutable(schema, input, unvisit) {
+  return Object.keys(schema).reduce(function (object, key) {
+    // Immutable maps cast keys to strings on write so we need to ensure
+    // we're accessing them using string keys.
+    var stringKey = '' + key;
+
+    if (object.has(stringKey)) {
+      return object.set(stringKey, unvisit(object.get(stringKey), schema[stringKey]));
+    } else {
+      return object;
+    }
+  }, input);
+}
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5227,19 +5283,19 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _Entity = __webpack_require__(14);
+var _Entity = __webpack_require__(11);
 
 var _Entity2 = _interopRequireDefault(_Entity);
 
-var _Union = __webpack_require__(16);
+var _Union = __webpack_require__(12);
 
 var _Union2 = _interopRequireDefault(_Union);
 
-var _Values = __webpack_require__(17);
+var _Values = __webpack_require__(13);
 
 var _Values2 = _interopRequireDefault(_Values);
 
-var _Array = __webpack_require__(13);
+var _Array = __webpack_require__(14);
 
 var ArrayUtils = _interopRequireWildcard(_Array);
 
@@ -5247,7 +5303,7 @@ var _Object = __webpack_require__(15);
 
 var ObjectUtils = _interopRequireWildcard(_Object);
 
-var _ImmutableUtils = __webpack_require__(3);
+var _ImmutableUtils = __webpack_require__(2);
 
 var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
 
@@ -5375,60 +5431,7 @@ var denormalize = exports.denormalize = function denormalize(input, schema, enti
 };
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isImmutable = isImmutable;
-exports.denormalizeImmutable = denormalizeImmutable;
-/**
- * Helpers to enable Immutable compatibility *without* bringing in
- * the 'immutable' package as a dependency.
- */
-
-/**
- * Check if an object is immutable by checking if it has a key specific
- * to the immutable library.
- *
- * @param  {any} object
- * @return {bool}
- */
-function isImmutable(object) {
-  return !!(object && (object.hasOwnProperty('__ownerID') || // Immutable.Map
-  object._map && object._map.hasOwnProperty('__ownerID') // Immutable.Record
-  ));
-}
-
-/**
- * Denormalize an immutable entity.
- *
- * @param  {Schema} schema
- * @param  {Immutable.Map|Immutable.Record} input
- * @param  {function} unvisit
- * @param  {function} getDenormalizedEntity
- * @return {Immutable.Map|Immutable.Record}
- */
-function denormalizeImmutable(schema, input, unvisit) {
-  return Object.keys(schema).reduce(function (object, key) {
-    // Immutable maps cast keys to strings on write so we need to ensure
-    // we're accessing them using string keys.
-    var stringKey = '' + key;
-
-    if (object.has(stringKey)) {
-      return object.set(stringKey, unvisit(object.get(stringKey), schema[stringKey]));
-    } else {
-      return object;
-    }
-  }, input);
-}
-
-/***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5439,6 +5442,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _ImmutableUtils = __webpack_require__(2);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5487,11 +5492,13 @@ var PolymorphicSchema = function () {
   }, {
     key: 'denormalizeValue',
     value: function denormalizeValue(value, unvisit) {
-      if (!this.isSingleSchema && !value.schema) {
+      var schemaKey = (0, _ImmutableUtils.isImmutable)(value) ? value.get('schema') : value.schema;
+      if (!this.isSingleSchema && !schemaKey) {
         return value;
       }
-      var schema = this.isSingleSchema ? this.schema : this.schema[value.schema];
-      return unvisit(value.id || value, schema);
+      var id = (0, _ImmutableUtils.isImmutable)(value) ? value.get('id') : value.id;
+      var schema = this.isSingleSchema ? this.schema : this.schema[schemaKey];
+      return unvisit(id || value, schema);
     }
   }, {
     key: 'isSingleSchema',
@@ -5506,54 +5513,59 @@ var PolymorphicSchema = function () {
 exports.default = PolymorphicSchema;
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.configure = configure;
 
-var _middleware = __webpack_require__(10);
+var _hoc = __webpack_require__(7);
 
-var _middleware2 = _interopRequireDefault(_middleware);
+Object.defineProperty(exports, "GraphQLConnecter", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_hoc).default;
+  }
+});
 
-var _reducer = __webpack_require__(11);
+var _configurer = __webpack_require__(9);
 
-var _reducer2 = _interopRequireDefault(_reducer);
+Object.defineProperty(exports, "configure", {
+  enumerable: true,
+  get: function get() {
+    return _configurer.configure;
+  }
+});
 
-var _actions = __webpack_require__(9);
+var _graphqlTypesConverters = __webpack_require__(1);
 
-var _actions2 = _interopRequireDefault(_actions);
+Object.defineProperty(exports, "graphQLizr", {
+  enumerable: true,
+  get: function get() {
+    return _graphqlTypesConverters.graphQLizr;
+  }
+});
+Object.defineProperty(exports, "graphQLRecordr", {
+  enumerable: true,
+  get: function get() {
+    return _graphqlTypesConverters.graphQLRecordr;
+  }
+});
 
-var _graphqlTypesConverters = __webpack_require__(0);
+var _selectors = __webpack_require__(21);
 
-var _normalizr = __webpack_require__(2);
+Object.defineProperty(exports, "selectData", {
+  enumerable: true,
+  get: function get() {
+    return _selectors.selectData;
+  }
+});
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function configure(graphQLSchema, context) {
-  var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLSchema);
-  var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLSchema);
-  var actions = (0, _actions2.default)();
-  return {
-    actions: actions,
-    middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel, context),
-    reducer: (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLSchema),
-    normalizrModel: normalizrModel,
-    recordsModel: recordsModel
-  };
-}
 
 /***/ }),
 /* 7 */
@@ -5573,11 +5585,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 exports.default = GraphQLConnecter;
 
-var _react = __webpack_require__(20);
+var _react = __webpack_require__(8);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _immutable = __webpack_require__(1);
+var _immutable = __webpack_require__(0);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5645,70 +5657,9 @@ function GraphQLConnecter(mapPropsToNeeds, mapCacheToProps) {
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-
-"use babel";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.selectData = selectData;
-
-var _graphql = __webpack_require__(5);
-
-var _immutable = __webpack_require__(1);
-
-function getImmutableSelector(graphQLQuery) {
-  var ast = (0, _graphql.parse)(graphQLQuery);
-  var query = ast.definitions[0];
-  var rootField = query.selectionSet.selections[0];
-  var rootFieldName = rootField.name.value;
-  var rootFieldParamID = void 0;
-  var immutableSelector = [];
-  immutableSelector.push(rootFieldName);
-  var idArg = void 0;
-  if (rootField.arguments.length > 0 && (idArg = rootField.arguments.find(function (arg) {
-    return arg.name.value == "id";
-  }))) {
-    rootFieldParamID = idArg.value.value;
-    immutableSelector.push({ type: "id", value: rootFieldParamID });
-  }
-  return immutableSelector;
-}
-
-function convertIDsToIndex(data, selector) {
-  return selector.reduce(function (reduction, value) {
-    if (reduction.newSelector.count() > 0 && reduction.newSelector.last() === null) return reduction;else {
-      if (typeof value == "string" || typeof value == "number") {
-        return {
-          rootData: reduction.rootData.get(value),
-          newSelector: reduction.newSelector.push(value)
-        };
-      } else {
-        if (value.type == "id") {
-          var selectedIndex = reduction.rootData.findIndex(function (item) {
-            return item.get("id") == value.value;
-          });
-          if (selectedIndex == -1) selectedIndex = null;
-          return {
-            rootData: selectedIndex ? reduction.rootData.get(selectedIndex) : null,
-            newSelector: reduction.newSelector.push(selectedIndex)
-          };
-        } else {
-          return reduction;
-        }
-      }
-    }
-  }, { rootData: data, newSelector: (0, _immutable.List)() }).newSelector.toJS();
-}
-
-function selectData(data, query) {
-  var selectorWithIDs = getImmutableSelector(query);
-  var selector = convertIDsToIndex(data, selectorWithIDs);
-  return (0, _immutable.Map)().set(selectorWithIDs[0], data.getIn(selector, null));
-}
+module.exports = __WEBPACK_EXTERNAL_MODULE_8__;
 
 /***/ }),
 /* 9 */
@@ -5721,31 +5672,36 @@ function selectData(data, query) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = configureActions;
+exports.configure = configure;
 
-function configureActions() {
+var _middleware = __webpack_require__(10);
+
+var _middleware2 = _interopRequireDefault(_middleware);
+
+var _reducer = __webpack_require__(16);
+
+var _reducer2 = _interopRequireDefault(_reducer);
+
+var _actions = __webpack_require__(20);
+
+var _actions2 = _interopRequireDefault(_actions);
+
+var _graphqlTypesConverters = __webpack_require__(1);
+
+var _normalizr = __webpack_require__(4);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function configure(graphQLSchema, context) {
+  var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLSchema);
+  var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLSchema);
+  var actions = (0, _actions2.default)();
   return {
-    packageData: function packageData(data) {
-      return {
-        type: "DATA_RECEIVED",
-        payload: data
-      };
-    },
-    removeData: function removeData(identifiers) {
-      return {
-        type: "DATA_REMOVED",
-        payload: identifiers
-      };
-    },
-    notifyError: function notifyError(err, query) {
-      return {
-        type: "GRAPHQL_ERRORS_RECEIVED",
-        payload: {
-          errors: err,
-          query: query
-        }
-      };
-    }
+    actions: actions,
+    middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel, context),
+    reducer: (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLSchema),
+    normalizrModel: normalizrModel,
+    recordsModel: recordsModel
   };
 }
 
@@ -5783,12 +5739,458 @@ exports.default = function (schema, actions, normalizrModel, context) {
   };
 };
 
-var _graphql = __webpack_require__(5);
+var _graphql = __webpack_require__(3);
 
-var _graphqlTypesConverters = __webpack_require__(0);
+var _graphqlTypesConverters = __webpack_require__(1);
 
 /***/ }),
 /* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _ImmutableUtils = __webpack_require__(2);
+
+var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var getDefaultGetId = function getDefaultGetId(idAttribute) {
+  return function (input) {
+    return ImmutableUtils.isImmutable(input) ? input.get(idAttribute) : input[idAttribute];
+  };
+};
+
+var EntitySchema = function () {
+  function EntitySchema(key) {
+    var definition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    _classCallCheck(this, EntitySchema);
+
+    if (!key || typeof key !== 'string') {
+      throw new Error('Expected a string key for Entity, but found ' + key + '.');
+    }
+
+    var _options$idAttribute = options.idAttribute,
+        idAttribute = _options$idAttribute === undefined ? 'id' : _options$idAttribute,
+        _options$mergeStrateg = options.mergeStrategy,
+        mergeStrategy = _options$mergeStrateg === undefined ? function (entityA, entityB) {
+      return _extends({}, entityA, entityB);
+    } : _options$mergeStrateg,
+        _options$processStrat = options.processStrategy,
+        processStrategy = _options$processStrat === undefined ? function (input) {
+      return _extends({}, input);
+    } : _options$processStrat;
+
+
+    this._key = key;
+    this._getId = typeof idAttribute === 'function' ? idAttribute : getDefaultGetId(idAttribute);
+    this._idAttribute = idAttribute;
+    this._mergeStrategy = mergeStrategy;
+    this._processStrategy = processStrategy;
+    this.define(definition);
+  }
+
+  _createClass(EntitySchema, [{
+    key: 'define',
+    value: function define(definition) {
+      this.schema = Object.keys(definition).reduce(function (entitySchema, key) {
+        var schema = definition[key];
+        return _extends({}, entitySchema, _defineProperty({}, key, schema));
+      }, this.schema || {});
+    }
+  }, {
+    key: 'getId',
+    value: function getId(input, parent, key) {
+      return this._getId(input, parent, key);
+    }
+  }, {
+    key: 'merge',
+    value: function merge(entityA, entityB) {
+      return this._mergeStrategy(entityA, entityB);
+    }
+  }, {
+    key: 'normalize',
+    value: function normalize(input, parent, key, visit, addEntity) {
+      var _this = this;
+
+      var processedEntity = this._processStrategy(input, parent, key);
+      Object.keys(this.schema).forEach(function (key) {
+        if (processedEntity.hasOwnProperty(key) && _typeof(processedEntity[key]) === 'object') {
+          var schema = _this.schema[key];
+          processedEntity[key] = visit(processedEntity[key], processedEntity, key, schema, addEntity);
+        }
+      });
+
+      addEntity(this, processedEntity, input, parent, key);
+      return this.getId(input, parent, key);
+    }
+  }, {
+    key: 'denormalize',
+    value: function denormalize(entity, unvisit) {
+      var _this2 = this;
+
+      if (ImmutableUtils.isImmutable(entity)) {
+        return ImmutableUtils.denormalizeImmutable(this.schema, entity, unvisit);
+      }
+
+      Object.keys(this.schema).forEach(function (key) {
+        if (entity.hasOwnProperty(key)) {
+          var schema = _this2.schema[key];
+          entity[key] = unvisit(entity[key], schema);
+        }
+      });
+      return entity;
+    }
+  }, {
+    key: 'key',
+    get: function get() {
+      return this._key;
+    }
+  }, {
+    key: 'idAttribute',
+    get: function get() {
+      return this._idAttribute;
+    }
+  }]);
+
+  return EntitySchema;
+}();
+
+exports.default = EntitySchema;
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Polymorphic = __webpack_require__(5);
+
+var _Polymorphic2 = _interopRequireDefault(_Polymorphic);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var UnionSchema = function (_PolymorphicSchema) {
+  _inherits(UnionSchema, _PolymorphicSchema);
+
+  function UnionSchema(definition, schemaAttribute) {
+    _classCallCheck(this, UnionSchema);
+
+    if (!schemaAttribute) {
+      throw new Error('Expected option "schemaAttribute" not found on UnionSchema.');
+    }
+    return _possibleConstructorReturn(this, (UnionSchema.__proto__ || Object.getPrototypeOf(UnionSchema)).call(this, definition, schemaAttribute));
+  }
+
+  _createClass(UnionSchema, [{
+    key: 'normalize',
+    value: function normalize(input, parent, key, visit, addEntity) {
+      return this.normalizeValue(input, parent, key, visit, addEntity);
+    }
+  }, {
+    key: 'denormalize',
+    value: function denormalize(input, unvisit) {
+      return this.denormalizeValue(input, unvisit);
+    }
+  }]);
+
+  return UnionSchema;
+}(_Polymorphic2.default);
+
+exports.default = UnionSchema;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Polymorphic = __webpack_require__(5);
+
+var _Polymorphic2 = _interopRequireDefault(_Polymorphic);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ValuesSchema = function (_PolymorphicSchema) {
+  _inherits(ValuesSchema, _PolymorphicSchema);
+
+  function ValuesSchema() {
+    _classCallCheck(this, ValuesSchema);
+
+    return _possibleConstructorReturn(this, (ValuesSchema.__proto__ || Object.getPrototypeOf(ValuesSchema)).apply(this, arguments));
+  }
+
+  _createClass(ValuesSchema, [{
+    key: 'normalize',
+    value: function normalize(input, parent, key, visit, addEntity) {
+      var _this2 = this;
+
+      return Object.keys(input).reduce(function (output, key, index) {
+        var value = input[key];
+        return value !== undefined && value !== null ? _extends({}, output, _defineProperty({}, key, _this2.normalizeValue(value, input, key, visit, addEntity))) : output;
+      }, {});
+    }
+  }, {
+    key: 'denormalize',
+    value: function denormalize(input, unvisit) {
+      var _this3 = this;
+
+      return Object.keys(input).reduce(function (output, key) {
+        var entityOrId = input[key];
+        return _extends({}, output, _defineProperty({}, key, _this3.denormalizeValue(entityOrId, unvisit)));
+      }, {});
+    }
+  }]);
+
+  return ValuesSchema;
+}(_Polymorphic2.default);
+
+exports.default = ValuesSchema;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.denormalize = exports.normalize = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Polymorphic = __webpack_require__(5);
+
+var _Polymorphic2 = _interopRequireDefault(_Polymorphic);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var validateSchema = function validateSchema(definition) {
+  var isArray = Array.isArray(definition);
+  if (isArray && definition.length > 1) {
+    throw new Error('Expected schema definition to be a single schema, but found ' + definition.length + '.');
+  }
+
+  return definition[0];
+};
+
+var getValues = function getValues(input) {
+  return Array.isArray(input) ? input : Object.keys(input).map(function (key) {
+    return input[key];
+  });
+};
+
+var normalize = exports.normalize = function normalize(schema, input, parent, key, visit, addEntity) {
+  schema = validateSchema(schema);
+
+  var values = getValues(input);
+
+  // Special case: Arrays pass *their* parent on to their children, since there
+  // is not any special information that can be gathered from themselves directly
+  return values.map(function (value, index) {
+    return visit(value, parent, key, schema, addEntity);
+  });
+};
+
+var denormalize = exports.denormalize = function denormalize(schema, input, unvisit) {
+  schema = validateSchema(schema);
+  return input && input.map ? input.map(function (entityOrId) {
+    return unvisit(entityOrId, schema);
+  }) : input;
+};
+
+var ArraySchema = function (_PolymorphicSchema) {
+  _inherits(ArraySchema, _PolymorphicSchema);
+
+  function ArraySchema() {
+    _classCallCheck(this, ArraySchema);
+
+    return _possibleConstructorReturn(this, (ArraySchema.__proto__ || Object.getPrototypeOf(ArraySchema)).apply(this, arguments));
+  }
+
+  _createClass(ArraySchema, [{
+    key: 'normalize',
+    value: function normalize(input, parent, key, visit, addEntity) {
+      var _this2 = this;
+
+      var values = getValues(input);
+
+      return values.map(function (value, index) {
+        return _this2.normalizeValue(value, parent, key, visit, addEntity);
+      }).filter(function (value) {
+        return value !== undefined && value !== null;
+      });
+    }
+  }, {
+    key: 'denormalize',
+    value: function denormalize(input, unvisit) {
+      var _this3 = this;
+
+      return input && input.map ? input.map(function (value) {
+        return _this3.denormalizeValue(value, unvisit);
+      }) : input;
+    }
+  }]);
+
+  return ArraySchema;
+}(_Polymorphic2.default);
+
+exports.default = ArraySchema;
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.denormalize = exports.normalize = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _ImmutableUtils = __webpack_require__(2);
+
+var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _normalize = function _normalize(schema, input, parent, key, visit, addEntity) {
+  var object = _extends({}, input);
+  Object.keys(schema).forEach(function (key) {
+    var localSchema = schema[key];
+    var value = visit(input[key], input, key, localSchema, addEntity);
+    if (value === undefined || value === null) {
+      delete object[key];
+    } else {
+      object[key] = value;
+    }
+  });
+  return object;
+};
+
+exports.normalize = _normalize;
+var _denormalize = function _denormalize(schema, input, unvisit) {
+  if (ImmutableUtils.isImmutable(input)) {
+    return ImmutableUtils.denormalizeImmutable(schema, input, unvisit);
+  }
+
+  var object = _extends({}, input);
+  Object.keys(schema).forEach(function (key) {
+    if (object[key]) {
+      object[key] = unvisit(object[key], schema[key]);
+    }
+  });
+  return object;
+};
+
+exports.denormalize = _denormalize;
+
+var ObjectSchema = function () {
+  function ObjectSchema(definition) {
+    _classCallCheck(this, ObjectSchema);
+
+    this.define(definition);
+  }
+
+  _createClass(ObjectSchema, [{
+    key: 'define',
+    value: function define(definition) {
+      this.schema = Object.keys(definition).reduce(function (entitySchema, key) {
+        var schema = definition[key];
+        return _extends({}, entitySchema, _defineProperty({}, key, schema));
+      }, this.schema || {});
+    }
+  }, {
+    key: 'normalize',
+    value: function normalize() {
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _normalize.apply(undefined, [this.schema].concat(args));
+    }
+  }, {
+    key: 'denormalize',
+    value: function denormalize() {
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
+
+      return _denormalize.apply(undefined, [this.schema].concat(args));
+    }
+  }]);
+
+  return ObjectSchema;
+}();
+
+exports.default = ObjectSchema;
+
+/***/ }),
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5803,13 +6205,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports.default = configureReducer;
 
-var _immutable = __webpack_require__(1);
+var _immutable = __webpack_require__(0);
 
-var _normalizr = __webpack_require__(2);
+var _normalizr = __webpack_require__(4);
 
-var _graphqlTypesConverters = __webpack_require__(0);
+var _graphqlTypesConverters = __webpack_require__(1);
 
-var _lodash = __webpack_require__(12);
+var _lodash = __webpack_require__(17);
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -5888,7 +6290,7 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
 }
 
 /***/ }),
-/* 12 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -22980,452 +23382,6 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18), __webpack_require__(19)(module)))
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.denormalize = exports.normalize = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Polymorphic = __webpack_require__(4);
-
-var _Polymorphic2 = _interopRequireDefault(_Polymorphic);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var validateSchema = function validateSchema(definition) {
-  var isArray = Array.isArray(definition);
-  if (isArray && definition.length > 1) {
-    throw new Error('Expected schema definition to be a single schema, but found ' + definition.length + '.');
-  }
-
-  return definition[0];
-};
-
-var getValues = function getValues(input) {
-  return Array.isArray(input) ? input : Object.keys(input).map(function (key) {
-    return input[key];
-  });
-};
-
-var normalize = exports.normalize = function normalize(schema, input, parent, key, visit, addEntity) {
-  schema = validateSchema(schema);
-
-  var values = getValues(input);
-
-  // Special case: Arrays pass *their* parent on to their children, since there
-  // is not any special information that can be gathered from themselves directly
-  return values.map(function (value, index) {
-    return visit(value, parent, key, schema, addEntity);
-  });
-};
-
-var denormalize = exports.denormalize = function denormalize(schema, input, unvisit) {
-  schema = validateSchema(schema);
-  return input && input.map ? input.map(function (entityOrId) {
-    return unvisit(entityOrId, schema);
-  }) : input;
-};
-
-var ArraySchema = function (_PolymorphicSchema) {
-  _inherits(ArraySchema, _PolymorphicSchema);
-
-  function ArraySchema() {
-    _classCallCheck(this, ArraySchema);
-
-    return _possibleConstructorReturn(this, (ArraySchema.__proto__ || Object.getPrototypeOf(ArraySchema)).apply(this, arguments));
-  }
-
-  _createClass(ArraySchema, [{
-    key: 'normalize',
-    value: function normalize(input, parent, key, visit, addEntity) {
-      var _this2 = this;
-
-      var values = getValues(input);
-
-      return values.map(function (value, index) {
-        return _this2.normalizeValue(value, parent, key, visit, addEntity);
-      }).filter(function (value) {
-        return value !== undefined && value !== null;
-      });
-    }
-  }, {
-    key: 'denormalize',
-    value: function denormalize(input, unvisit) {
-      var _this3 = this;
-
-      return input && input.map ? input.map(function (value) {
-        return _this3.denormalizeValue(value, unvisit);
-      }) : input;
-    }
-  }]);
-
-  return ArraySchema;
-}(_Polymorphic2.default);
-
-exports.default = ArraySchema;
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _ImmutableUtils = __webpack_require__(3);
-
-var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var getDefaultGetId = function getDefaultGetId(idAttribute) {
-  return function (input) {
-    return ImmutableUtils.isImmutable(input) ? input.get(idAttribute) : input[idAttribute];
-  };
-};
-
-var EntitySchema = function () {
-  function EntitySchema(key) {
-    var definition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-    _classCallCheck(this, EntitySchema);
-
-    if (!key || typeof key !== 'string') {
-      throw new Error('Expected a string key for Entity, but found ' + key + '.');
-    }
-
-    var _options$idAttribute = options.idAttribute,
-        idAttribute = _options$idAttribute === undefined ? 'id' : _options$idAttribute,
-        _options$mergeStrateg = options.mergeStrategy,
-        mergeStrategy = _options$mergeStrateg === undefined ? function (entityA, entityB) {
-      return _extends({}, entityA, entityB);
-    } : _options$mergeStrateg,
-        _options$processStrat = options.processStrategy,
-        processStrategy = _options$processStrat === undefined ? function (input) {
-      return _extends({}, input);
-    } : _options$processStrat;
-
-
-    this._key = key;
-    this._getId = typeof idAttribute === 'function' ? idAttribute : getDefaultGetId(idAttribute);
-    this._idAttribute = idAttribute;
-    this._mergeStrategy = mergeStrategy;
-    this._processStrategy = processStrategy;
-    this.define(definition);
-  }
-
-  _createClass(EntitySchema, [{
-    key: 'define',
-    value: function define(definition) {
-      this.schema = Object.keys(definition).reduce(function (entitySchema, key) {
-        var schema = definition[key];
-        return _extends({}, entitySchema, _defineProperty({}, key, schema));
-      }, this.schema || {});
-    }
-  }, {
-    key: 'getId',
-    value: function getId(input, parent, key) {
-      return this._getId(input, parent, key);
-    }
-  }, {
-    key: 'merge',
-    value: function merge(entityA, entityB) {
-      return this._mergeStrategy(entityA, entityB);
-    }
-  }, {
-    key: 'normalize',
-    value: function normalize(input, parent, key, visit, addEntity) {
-      var _this = this;
-
-      var processedEntity = this._processStrategy(input, parent, key);
-      Object.keys(this.schema).forEach(function (key) {
-        if (processedEntity.hasOwnProperty(key) && _typeof(processedEntity[key]) === 'object') {
-          var schema = _this.schema[key];
-          processedEntity[key] = visit(processedEntity[key], processedEntity, key, schema, addEntity);
-        }
-      });
-
-      addEntity(this, processedEntity, input, parent, key);
-      return this.getId(input, parent, key);
-    }
-  }, {
-    key: 'denormalize',
-    value: function denormalize(entity, unvisit) {
-      var _this2 = this;
-
-      if (ImmutableUtils.isImmutable(entity)) {
-        return ImmutableUtils.denormalizeImmutable(this.schema, entity, unvisit);
-      }
-
-      Object.keys(this.schema).forEach(function (key) {
-        if (entity.hasOwnProperty(key)) {
-          var schema = _this2.schema[key];
-          entity[key] = unvisit(entity[key], schema);
-        }
-      });
-      return entity;
-    }
-  }, {
-    key: 'key',
-    get: function get() {
-      return this._key;
-    }
-  }, {
-    key: 'idAttribute',
-    get: function get() {
-      return this._idAttribute;
-    }
-  }]);
-
-  return EntitySchema;
-}();
-
-exports.default = EntitySchema;
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.denormalize = exports.normalize = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _ImmutableUtils = __webpack_require__(3);
-
-var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _normalize = function _normalize(schema, input, parent, key, visit, addEntity) {
-  var object = _extends({}, input);
-  Object.keys(schema).forEach(function (key) {
-    var localSchema = schema[key];
-    var value = visit(input[key], input, key, localSchema, addEntity);
-    if (value === undefined || value === null) {
-      delete object[key];
-    } else {
-      object[key] = value;
-    }
-  });
-  return object;
-};
-
-exports.normalize = _normalize;
-var _denormalize = function _denormalize(schema, input, unvisit) {
-  if (ImmutableUtils.isImmutable(input)) {
-    return ImmutableUtils.denormalizeImmutable(schema, input, unvisit);
-  }
-
-  var object = _extends({}, input);
-  Object.keys(schema).forEach(function (key) {
-    if (object[key]) {
-      object[key] = unvisit(object[key], schema[key]);
-    }
-  });
-  return object;
-};
-
-exports.denormalize = _denormalize;
-
-var ObjectSchema = function () {
-  function ObjectSchema(definition) {
-    _classCallCheck(this, ObjectSchema);
-
-    this.define(definition);
-  }
-
-  _createClass(ObjectSchema, [{
-    key: 'define',
-    value: function define(definition) {
-      this.schema = Object.keys(definition).reduce(function (entitySchema, key) {
-        var schema = definition[key];
-        return _extends({}, entitySchema, _defineProperty({}, key, schema));
-      }, this.schema || {});
-    }
-  }, {
-    key: 'normalize',
-    value: function normalize() {
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return _normalize.apply(undefined, [this.schema].concat(args));
-    }
-  }, {
-    key: 'denormalize',
-    value: function denormalize() {
-      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-        args[_key2] = arguments[_key2];
-      }
-
-      return _denormalize.apply(undefined, [this.schema].concat(args));
-    }
-  }]);
-
-  return ObjectSchema;
-}();
-
-exports.default = ObjectSchema;
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Polymorphic = __webpack_require__(4);
-
-var _Polymorphic2 = _interopRequireDefault(_Polymorphic);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var UnionSchema = function (_PolymorphicSchema) {
-  _inherits(UnionSchema, _PolymorphicSchema);
-
-  function UnionSchema(definition, schemaAttribute) {
-    _classCallCheck(this, UnionSchema);
-
-    if (!schemaAttribute) {
-      throw new Error('Expected option "schemaAttribute" not found on UnionSchema.');
-    }
-    return _possibleConstructorReturn(this, (UnionSchema.__proto__ || Object.getPrototypeOf(UnionSchema)).call(this, definition, schemaAttribute));
-  }
-
-  _createClass(UnionSchema, [{
-    key: 'normalize',
-    value: function normalize(input, parent, key, visit, addEntity) {
-      return this.normalizeValue(input, parent, key, visit, addEntity);
-    }
-  }, {
-    key: 'denormalize',
-    value: function denormalize(input, unvisit) {
-      return this.denormalizeValue(input, unvisit);
-    }
-  }]);
-
-  return UnionSchema;
-}(_Polymorphic2.default);
-
-exports.default = UnionSchema;
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Polymorphic = __webpack_require__(4);
-
-var _Polymorphic2 = _interopRequireDefault(_Polymorphic);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var ValuesSchema = function (_PolymorphicSchema) {
-  _inherits(ValuesSchema, _PolymorphicSchema);
-
-  function ValuesSchema() {
-    _classCallCheck(this, ValuesSchema);
-
-    return _possibleConstructorReturn(this, (ValuesSchema.__proto__ || Object.getPrototypeOf(ValuesSchema)).apply(this, arguments));
-  }
-
-  _createClass(ValuesSchema, [{
-    key: 'normalize',
-    value: function normalize(input, parent, key, visit, addEntity) {
-      var _this2 = this;
-
-      return Object.keys(input).reduce(function (output, key, index) {
-        var value = input[key];
-        return value !== undefined && value !== null ? _extends({}, output, _defineProperty({}, key, _this2.normalizeValue(value, input, key, visit, addEntity))) : output;
-      }, {});
-    }
-  }, {
-    key: 'denormalize',
-    value: function denormalize(input, unvisit) {
-      var _this3 = this;
-
-      return Object.keys(input).reduce(function (output, key) {
-        var entityOrId = input[key];
-        return _extends({}, output, _defineProperty({}, key, _this3.denormalizeValue(entityOrId, unvisit)));
-      }, {});
-    }
-  }]);
-
-  return ValuesSchema;
-}(_Polymorphic2.default);
-
-exports.default = ValuesSchema;
-
-/***/ }),
 /* 18 */
 /***/ (function(module, exports) {
 
@@ -23482,9 +23438,42 @@ module.exports = function(module) {
 
 /***/ }),
 /* 20 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_20__;
+"use strict";
+
+"use babel";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = configureActions;
+
+function configureActions() {
+  return {
+    packageData: function packageData(data) {
+      return {
+        type: "DATA_RECEIVED",
+        payload: data
+      };
+    },
+    removeData: function removeData(identifiers) {
+      return {
+        type: "DATA_REMOVED",
+        payload: identifiers
+      };
+    },
+    notifyError: function notifyError(err, query) {
+      return {
+        type: "GRAPHQL_ERRORS_RECEIVED",
+        payload: {
+          errors: err,
+          query: query
+        }
+      };
+    }
+  };
+}
 
 /***/ }),
 /* 21 */
@@ -23492,54 +23481,66 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_20__;
 
 "use strict";
 
+"use babel";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.selectData = selectData;
 
-var _hoc = __webpack_require__(7);
+var _graphql = __webpack_require__(3);
 
-Object.defineProperty(exports, "GraphQLConnecter", {
-  enumerable: true,
-  get: function get() {
-    return _interopRequireDefault(_hoc).default;
+var _immutable = __webpack_require__(0);
+
+function getImmutableSelector(graphQLQuery) {
+  var ast = (0, _graphql.parse)(graphQLQuery);
+  var query = ast.definitions[0];
+  var rootField = query.selectionSet.selections[0];
+  var rootFieldName = rootField.name.value;
+  var rootFieldParamID = void 0;
+  var immutableSelector = [];
+  immutableSelector.push(rootFieldName);
+  var idArg = void 0;
+  if (rootField.arguments.length > 0 && (idArg = rootField.arguments.find(function (arg) {
+    return arg.name.value == "id";
+  }))) {
+    rootFieldParamID = idArg.value.value;
+    immutableSelector.push({ type: "id", value: rootFieldParamID });
   }
-});
+  return immutableSelector;
+}
 
-var _configurer = __webpack_require__(6);
+function convertIDsToIndex(data, selector) {
+  return selector.reduce(function (reduction, value) {
+    if (reduction.newSelector.count() > 0 && reduction.newSelector.last() === null) return reduction;else {
+      if (typeof value == "string" || typeof value == "number") {
+        return {
+          rootData: reduction.rootData.get(value),
+          newSelector: reduction.newSelector.push(value)
+        };
+      } else {
+        if (value.type == "id") {
+          var selectedIndex = reduction.rootData.findIndex(function (item) {
+            return item.get("id") == value.value;
+          });
+          if (selectedIndex == -1) selectedIndex = null;
+          return {
+            rootData: selectedIndex ? reduction.rootData.get(selectedIndex) : null,
+            newSelector: reduction.newSelector.push(selectedIndex)
+          };
+        } else {
+          return reduction;
+        }
+      }
+    }
+  }, { rootData: data, newSelector: (0, _immutable.List)() }).newSelector.toJS();
+}
 
-Object.defineProperty(exports, "configure", {
-  enumerable: true,
-  get: function get() {
-    return _configurer.configure;
-  }
-});
-
-var _graphqlTypesConverters = __webpack_require__(0);
-
-Object.defineProperty(exports, "graphQLizr", {
-  enumerable: true,
-  get: function get() {
-    return _graphqlTypesConverters.graphQLizr;
-  }
-});
-Object.defineProperty(exports, "graphQLRecordr", {
-  enumerable: true,
-  get: function get() {
-    return _graphqlTypesConverters.graphQLRecordr;
-  }
-});
-
-var _selectors = __webpack_require__(8);
-
-Object.defineProperty(exports, "selectData", {
-  enumerable: true,
-  get: function get() {
-    return _selectors.selectData;
-  }
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function selectData(data, query) {
+  var selectorWithIDs = getImmutableSelector(query);
+  var selector = convertIDsToIndex(data, selectorWithIDs);
+  return (0, _immutable.Map)().set(selectorWithIDs[0], data.getIn(selector, null));
+}
 
 /***/ })
 /******/ ]);
