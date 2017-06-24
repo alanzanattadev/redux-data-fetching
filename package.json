@@ -25,6 +25,7 @@
     "babel-preset-react": "^6.11.1",
     "enzyme": "^2.5.1",
     "flow-bin": "^0.48.0",
+    "flow-typed": "^2.1.2",
     "jest": "^20.0.4",
     "react-addons-test-utils": "^15.2.1",
     "react-dom": "^15.2.1",
@@ -36,7 +37,6 @@
     "webpack-dev-server": "^2.5.0"
   },
   "dependencies": {
-    "flow-typed": "^2.1.2",
     "graphql": "^0.10.3",
     "immutable": "3",
     "lodash": "^4.17.4",
