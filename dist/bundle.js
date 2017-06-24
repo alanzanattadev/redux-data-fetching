@@ -77,6 +77,223 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+"use babel";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.createEntitiesForTypes = createEntitiesForTypes;
+exports.getRecordSchemaForType = getRecordSchemaForType;
+exports.createRecordsForTypes = createRecordsForTypes;
+exports.getDefinitionOfType = getDefinitionOfType;
+exports.addDefinitionsForTypes = addDefinitionsForTypes;
+exports.getConvertersFromSchema = getConvertersFromSchema;
+exports.getDataFromResponse = getDataFromResponse;
+exports.graphQLizr = graphQLizr;
+exports.graphQLRecordr = graphQLRecordr;
+exports.convertsEntityToRecord = convertsEntityToRecord;
+exports.convertsNormalizedEntitiesToRecords = convertsNormalizedEntitiesToRecords;
+
+var _normalizr = __webpack_require__(4);
+
+var _graphql = __webpack_require__(3);
+
+var _immutable = __webpack_require__(2);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function isGraphQLIntegratedType(typeName) {
+  return ["String", "Boolean", "Int", "ID", "Float", "__Schema", "__Type", "__TypeKind", "__Field", "__InputValue", "__EnumValue", "__Directive", "__DirectiveLocation"].includes(typeName);
+}
+
+function isEntity(graphQLType, markers) {
+  return _typeof(graphQLType._fields) === "object" && graphQLType._fields !== null && Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
+    return red || markers.includes(fieldName);
+  }, false);
+}
+
+function createEntitiesForTypes(typesMap, markers) {
+  return Object.keys(typesMap).reduce(function (red, typeName) {
+    return isGraphQLIntegratedType(typeName) || !isEntity(typesMap[typeName], markers) ? red : Object.assign(red, _defineProperty({}, typeName, new _normalizr.schema.Entity(typeName)), {});
+  }, {});
+}
+
+function getRecordSchemaForType(type) {
+  return Object.keys(type._fields).reduce(function (red, fieldName) {
+    return Object.assign({}, red, _defineProperty({}, fieldName, undefined));
+  }, {});
+}
+
+function createRecordsForTypes(typesMap) {
+  return Object.keys(typesMap).reduce(function (red, typeName) {
+    return isGraphQLIntegratedType(typeName) || !typesMap[typeName]._fields ? red : Object.assign(red, _defineProperty({}, typeName, (0, _immutable.Record)(getRecordSchemaForType(typesMap[typeName]), typeName)));
+  }, {});
+}
+
+function getDefinitionOfType(graphQLType, entities) {
+  if ("_fields" in graphQLType && _typeof(graphQLType._fields) === "object" && graphQLType._fields !== null) {
+    var fields = Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
+      // $FlowFixMe
+      var field = graphQLType._fields[fieldName];
+      // $FlowFixMe
+      if (field.type.name in entities) return Object.assign({}, red, _defineProperty({}, fieldName, entities[field.type.name]));else {
+        // $FlowFixMe
+        var definition = getDefinitionOfType(field.type, entities);
+        if (definition) return Object.assign({}, red, _defineProperty({}, fieldName, definition));else return red;
+      }
+    }, {});
+    if (Object.keys(fields).length > 0) return fields;else return undefined;
+  } else if ("ofType" in graphQLType && _typeof(graphQLType.ofType) === "object" && graphQLType.ofType !== null && typeof graphQLType.ofType.name === "string") {
+    if (graphQLType.ofType.name in entities) return [entities[graphQLType.ofType.name]];else return undefined;
+  } else {
+    return undefined;
+  }
+}
+
+function addDefinitionsForTypes(typesMap, entities) {
+  Object.keys(typesMap).forEach(function (typeName) {
+    if (isGraphQLIntegratedType(typeName) === false && entities[typeName] instanceof _normalizr.schema.Entity) {
+      var definition = getDefinitionOfType(typesMap[typeName], entities);
+      entities[typeName].define(definition || {});
+    }
+  });
+}
+
+function getConvertersFromSchema(schema) {
+  return Object.keys(schema._queryType._fields).reduce(function (red, field) {
+    var type = schema._queryType._fields[field].type;
+    var entityType = void 0;
+    if (_typeof(type.ofType) === "object" && type.ofType !== null) entityType = type.ofType.name;else if (type instanceof _graphql.GraphQLEnumType) entityType = type.name;else
+      // $FlowFixMe
+      entityType = type.name;
+    return Object.assign({}, red, _defineProperty({}, field, entityType));
+  }, {});
+}
+
+function getDataFromResponse(converters, data) {
+  return Object.keys(data).reduce(function (red, key) {
+    return Object.assign({}, red, _defineProperty({}, converters[key], Array.isArray(data[key]) ? data[key] : [data[key]]));
+  }, {});
+}
+
+function graphQLizr(schema) {
+  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+      _ref$markers = _ref.markers,
+      markers = _ref$markers === undefined ? ["id"] : _ref$markers;
+
+  var entities = createEntitiesForTypes(schema._typeMap, markers);
+  var converters = getConvertersFromSchema(schema);
+  addDefinitionsForTypes(schema._typeMap, entities);
+  return { entities: entities, converters: converters };
+}
+
+function graphQLRecordr(schema) {
+  var records = createRecordsForTypes(schema._typeMap);
+  return records;
+}
+
+function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
+  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) !== "object" || entity == null) return entity;
+  if (Array.isArray(entity) === true) {
+    console.error("Trying to convert", entity, "into a Record of type", type);
+    throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
+  }
+  // $FlowFixMe
+  return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
+    // $FlowFixMe
+    var field = entity[key];
+    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
+      if (graphQLSchema._typeMap[type] == null || graphQLSchema._typeMap[type]._fields == null ||
+      // $FlowFixMe
+      graphQLSchema._typeMap[type]._fields[key] == null) {
+        console.error("Error trying to convert entity", entity, "to record of type", type);
+        throw new Error("Error has been detected when trying to access the field with key " + key + ", if key is a number you may have wrapped data, sent to packageData, in an array where you shouldn't");
+      }
+      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field,
+      // $FlowFixMe
+      graphQLSchema._typeMap[type]._fields[key].type.name, graphQLSchema, recordsTypes)));
+    } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) === true) {
+      return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
+        return (typeof v === "undefined" ? "undefined" : _typeof(v)) === "object" ? convertsEntityToRecord(v,
+        // $FlowFixMe
+        graphQLSchema._typeMap[type]._fields[key].type.ofType.name, graphQLSchema, recordsTypes) : v;
+      })));
+    } else {
+      return Object.assign({}, red, _defineProperty({}, key, field));
+    }
+  }, {}));
+}
+
+function convertsNormalizedEntitiesToRecords(entities, recordsTypes, graphQLSchema) {
+  return Object.keys(entities).reduce(function (red, typeName) {
+    return Object.assign({}, red, _defineProperty({}, typeName, Object.keys(entities[typeName]).reduce(function (reduction, entityId) {
+      return Object.assign({}, reduction, _defineProperty({}, entityId, convertsEntityToRecord(entities[typeName][entityId], typeName, graphQLSchema, recordsTypes)));
+    }, {})));
+  }, {});
+}
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isImmutable = isImmutable;
+exports.denormalizeImmutable = denormalizeImmutable;
+/**
+ * Helpers to enable Immutable compatibility *without* bringing in
+ * the 'immutable' package as a dependency.
+ */
+
+/**
+ * Check if an object is immutable by checking if it has a key specific
+ * to the immutable library.
+ *
+ * @param  {any} object
+ * @return {bool}
+ */
+function isImmutable(object) {
+  return !!(object && (object.hasOwnProperty('__ownerID') || // Immutable.Map
+  object._map && object._map.hasOwnProperty('__ownerID') // Immutable.Record
+  ));
+}
+
+/**
+ * Denormalize an immutable entity.
+ *
+ * @param  {Schema} schema
+ * @param  {Immutable.Map|Immutable.Record} input
+ * @param  {function} unvisit
+ * @param  {function} getDenormalizedEntity
+ * @return {Immutable.Map|Immutable.Record}
+ */
+function denormalizeImmutable(schema, input, unvisit) {
+  return Object.keys(schema).reduce(function (object, key) {
+    // Immutable maps cast keys to strings on write so we need to ensure
+    // we're accessing them using string keys.
+    var stringKey = '' + key;
+
+    if (object.has(stringKey)) {
+      return object.set(stringKey, unvisit(object.get(stringKey), schema[stringKey]));
+    } else {
+      return object;
+    }
+  }, input);
+}
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
 /**
  *  Copyright (c) 2014-2015, Facebook, Inc.
  *  All rights reserved.
@@ -5058,210 +5275,6 @@ return /******/ (function(modules) { // webpackBootstrap
 }));
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-"use babel";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-exports.createEntitiesForTypes = createEntitiesForTypes;
-exports.getRecordSchemaForType = getRecordSchemaForType;
-exports.createRecordsForTypes = createRecordsForTypes;
-exports.getDefinitionOfType = getDefinitionOfType;
-exports.addDefinitionsForTypes = addDefinitionsForTypes;
-exports.getConvertersFromSchema = getConvertersFromSchema;
-exports.getDataFromResponse = getDataFromResponse;
-exports.graphQLizr = graphQLizr;
-exports.graphQLRecordr = graphQLRecordr;
-exports.convertsEntityToRecord = convertsEntityToRecord;
-exports.convertsNormalizedEntitiesToRecords = convertsNormalizedEntitiesToRecords;
-
-var _normalizr = __webpack_require__(4);
-
-var _graphql = __webpack_require__(3);
-
-var _immutable = __webpack_require__(0);
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function isGraphQLIntegratedType(typeName) {
-  return ["String", "Boolean", "Int", "ID", "Float", "__Schema", "__Type", "__TypeKind", "__Field", "__InputValue", "__EnumValue", "__Directive", "__DirectiveLocation"].includes(typeName);
-}
-
-function isEntity(graphQLType, markers) {
-  return graphQLType._fields && Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
-    return red || markers.includes(fieldName);
-  }, false);
-}
-
-function createEntitiesForTypes(typesMap, markers) {
-  return Object.keys(typesMap).reduce(function (red, typeName) {
-    return isGraphQLIntegratedType(typeName) || !isEntity(typesMap[typeName], markers) ? red : Object.assign(red, _defineProperty({}, typeName, new _normalizr.schema.Entity(typeName)), {});
-  }, {});
-}
-
-function getRecordSchemaForType(type) {
-  return Object.keys(type._fields).reduce(function (red, fieldName) {
-    return Object.assign({}, red, _defineProperty({}, fieldName, undefined));
-  }, {});
-}
-
-function createRecordsForTypes(typesMap) {
-  return Object.keys(typesMap).reduce(function (red, typeName) {
-    return isGraphQLIntegratedType(typeName) || !typesMap[typeName]._fields ? red : Object.assign(red, _defineProperty({}, typeName, (0, _immutable.Record)(getRecordSchemaForType(typesMap[typeName]), typeName)));
-  }, {});
-}
-
-function getDefinitionOfType(graphQLType, entities) {
-  if ("_fields" in graphQLType) {
-    var fields = Object.keys(graphQLType._fields).reduce(function (red, fieldName) {
-      var field = graphQLType._fields[fieldName];
-      if (field.type.name in entities) return Object.assign({}, red, _defineProperty({}, fieldName, entities[field.type.name]));else {
-        var definition = getDefinitionOfType(field.type, entities);
-        if (definition) return Object.assign({}, red, _defineProperty({}, fieldName, definition));else return red;
-      }
-    }, {});
-    if (Object.keys(fields).length > 0) return fields;else return undefined;
-  } else if ("ofType" in graphQLType) {
-    if (graphQLType.ofType.name in entities) return [entities[graphQLType.ofType.name]];else return undefined;
-  } else {
-    return undefined;
-  }
-}
-
-function addDefinitionsForTypes(typesMap, entities) {
-  Object.keys(typesMap).forEach(function (typeName) {
-    if (isGraphQLIntegratedType(typeName) === false && entities[typeName] instanceof _normalizr.schema.Entity) {
-      var definition = getDefinitionOfType(typesMap[typeName], entities);
-      entities[typeName].define(definition || {});
-    }
-  });
-}
-
-function getConvertersFromSchema(schema) {
-  return Object.keys(schema._queryType._fields).reduce(function (red, field) {
-    var type = schema._queryType._fields[field].type;
-    var entityType = void 0;
-    if (type.ofType) entityType = type.ofType.name;else entityType = type.name;
-    return Object.assign({}, red, _defineProperty({}, field, entityType));
-  }, {});
-}
-
-function getDataFromResponse(converters, data) {
-  return Object.keys(data).reduce(function (red, key) {
-    return Object.assign({}, red, _defineProperty({}, converters[key], Array.isArray(data[key]) ? data[key] : [data[key]]));
-  }, {});
-}
-
-function graphQLizr(schema) {
-  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-      _ref$markers = _ref.markers,
-      markers = _ref$markers === undefined ? ["id"] : _ref$markers;
-
-  var entities = createEntitiesForTypes(schema._typeMap, markers);
-  var converters = getConvertersFromSchema(schema);
-  addDefinitionsForTypes(schema._typeMap, entities);
-  return { entities: entities, converters: converters };
-}
-
-function graphQLRecordr(schema) {
-  var records = createRecordsForTypes(schema._typeMap);
-  return records;
-}
-
-function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
-  if ((typeof entity === "undefined" ? "undefined" : _typeof(entity)) != "object" || entity == null) return entity;
-  if (Array.isArray(entity) === true) {
-    console.error("Trying to convert", entity, "into a Record of type", type);
-    throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
-  }
-  return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
-    var field = entity[key];
-    if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
-      if (graphQLSchema._typeMap[type] == null || graphQLSchema._typeMap[type]._fields == null || graphQLSchema._typeMap[type]._fields[key] == null) {
-        console.error("Error trying to convert entity", entity, "to record of type", type);
-        throw new Error("Error has been detected when trying to access the field with key " + key + ", if key is a number you may have wrapped data, sent to packageData, in an array where you shouldn't");
-      }
-      return Object.assign({}, red, _defineProperty({}, key, convertsEntityToRecord(field, graphQLSchema._typeMap[type]._fields[key].type.name, graphQLSchema, recordsTypes)));
-    } else if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == true) {
-      return Object.assign({}, red, _defineProperty({}, key, field.map(function (v) {
-        return (typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" ? convertsEntityToRecord(v, graphQLSchema._typeMap[type]._fields[key].type.ofType.name, graphQLSchema, recordsTypes) : v;
-      })));
-    } else {
-      return Object.assign({}, red, _defineProperty({}, key, field));
-    }
-  }, {}));
-}
-
-function convertsNormalizedEntitiesToRecords(entities, recordsTypes, graphQLSchema) {
-  return Object.keys(entities).reduce(function (red, typeName) {
-    return Object.assign({}, red, _defineProperty({}, typeName, Object.keys(entities[typeName]).reduce(function (reduction, entityId) {
-      return Object.assign({}, reduction, _defineProperty({}, entityId, convertsEntityToRecord(entities[typeName][entityId], typeName, graphQLSchema, recordsTypes)));
-    }, {})));
-  }, {});
-}
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isImmutable = isImmutable;
-exports.denormalizeImmutable = denormalizeImmutable;
-/**
- * Helpers to enable Immutable compatibility *without* bringing in
- * the 'immutable' package as a dependency.
- */
-
-/**
- * Check if an object is immutable by checking if it has a key specific
- * to the immutable library.
- *
- * @param  {any} object
- * @return {bool}
- */
-function isImmutable(object) {
-  return !!(object && (object.hasOwnProperty('__ownerID') || // Immutable.Map
-  object._map && object._map.hasOwnProperty('__ownerID') // Immutable.Record
-  ));
-}
-
-/**
- * Denormalize an immutable entity.
- *
- * @param  {Schema} schema
- * @param  {Immutable.Map|Immutable.Record} input
- * @param  {function} unvisit
- * @param  {function} getDenormalizedEntity
- * @return {Immutable.Map|Immutable.Record}
- */
-function denormalizeImmutable(schema, input, unvisit) {
-  return Object.keys(schema).reduce(function (object, key) {
-    // Immutable maps cast keys to strings on write so we need to ensure
-    // we're accessing them using string keys.
-    var stringKey = '' + key;
-
-    if (object.has(stringKey)) {
-      return object.set(stringKey, unvisit(object.get(stringKey), schema[stringKey]));
-    } else {
-      return object;
-    }
-  }, input);
-}
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
@@ -5303,7 +5316,7 @@ var _Object = __webpack_require__(15);
 
 var ObjectUtils = _interopRequireWildcard(_Object);
 
-var _ImmutableUtils = __webpack_require__(2);
+var _ImmutableUtils = __webpack_require__(1);
 
 var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
 
@@ -5443,7 +5456,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ImmutableUtils = __webpack_require__(2);
+var _ImmutableUtils = __webpack_require__(1);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5541,7 +5554,7 @@ Object.defineProperty(exports, "configure", {
   }
 });
 
-var _graphqlTypesConverters = __webpack_require__(1);
+var _graphqlTypesConverters = __webpack_require__(0);
 
 Object.defineProperty(exports, "graphQLizr", {
   enumerable: true,
@@ -5553,15 +5566,6 @@ Object.defineProperty(exports, "graphQLRecordr", {
   enumerable: true,
   get: function get() {
     return _graphqlTypesConverters.graphQLRecordr;
-  }
-});
-
-var _selectors = __webpack_require__(21);
-
-Object.defineProperty(exports, "selectData", {
-  enumerable: true,
-  get: function get() {
-    return _selectors.selectData;
   }
 });
 
@@ -5589,7 +5593,7 @@ var _react = __webpack_require__(8);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _immutable = __webpack_require__(0);
+var _immutable = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5621,7 +5625,7 @@ function GraphQLConnecter(mapPropsToNeeds, mapCacheToProps) {
         }
       }, {
         key: "componentDidUpdate",
-        value: function componentDidUpdate(prevProps, prevState) {
+        value: function componentDidUpdate(prevProps) {
           if (mapPropsToNeeds(this.props) != mapPropsToNeeds(prevProps) || shouldRefetch(this.props, prevProps)) {
             this.getNeeds();
           }
@@ -5686,20 +5690,23 @@ var _actions = __webpack_require__(20);
 
 var _actions2 = _interopRequireDefault(_actions);
 
-var _graphqlTypesConverters = __webpack_require__(1);
+var _graphqlTypesConverters = __webpack_require__(0);
 
 var _normalizr = __webpack_require__(4);
+
+var _graphql = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function configure(graphQLSchema, context) {
-  var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLSchema);
-  var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLSchema);
+  var graphQLCompiledSchema = typeof graphQLSchema === "string" ? (0, _graphql.buildSchema)(graphQLSchema) : graphQLSchema;
+  var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLCompiledSchema);
+  var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLCompiledSchema);
   var actions = (0, _actions2.default)();
   return {
     actions: actions,
-    middleware: (0, _middleware2.default)(graphQLSchema, actions, normalizrModel, context),
-    reducer: (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLSchema),
+    middleware: (0, _middleware2.default)(graphQLCompiledSchema, actions, normalizrModel, context),
+    reducer: (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLCompiledSchema),
     normalizrModel: normalizrModel,
     recordsModel: recordsModel
   };
@@ -5741,7 +5748,7 @@ exports.default = function (schema, actions, normalizrModel, context) {
 
 var _graphql = __webpack_require__(3);
 
-var _graphqlTypesConverters = __webpack_require__(1);
+var _graphqlTypesConverters = __webpack_require__(0);
 
 /***/ }),
 /* 11 */
@@ -5760,7 +5767,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ImmutableUtils = __webpack_require__(2);
+var _ImmutableUtils = __webpack_require__(1);
 
 var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
 
@@ -6108,7 +6115,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _ImmutableUtils = __webpack_require__(2);
+var _ImmutableUtils = __webpack_require__(1);
 
 var ImmutableUtils = _interopRequireWildcard(_ImmutableUtils);
 
@@ -6205,11 +6212,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports.default = configureReducer;
 
-var _immutable = __webpack_require__(0);
+var _immutable = __webpack_require__(2);
 
 var _normalizr = __webpack_require__(4);
 
-var _graphqlTypesConverters = __webpack_require__(1);
+var _graphqlTypesConverters = __webpack_require__(0);
 
 var _lodash = __webpack_require__(17);
 
@@ -23473,73 +23480,6 @@ function configureActions() {
       };
     }
   };
-}
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-"use babel";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.selectData = selectData;
-
-var _graphql = __webpack_require__(3);
-
-var _immutable = __webpack_require__(0);
-
-function getImmutableSelector(graphQLQuery) {
-  var ast = (0, _graphql.parse)(graphQLQuery);
-  var query = ast.definitions[0];
-  var rootField = query.selectionSet.selections[0];
-  var rootFieldName = rootField.name.value;
-  var rootFieldParamID = void 0;
-  var immutableSelector = [];
-  immutableSelector.push(rootFieldName);
-  var idArg = void 0;
-  if (rootField.arguments.length > 0 && (idArg = rootField.arguments.find(function (arg) {
-    return arg.name.value == "id";
-  }))) {
-    rootFieldParamID = idArg.value.value;
-    immutableSelector.push({ type: "id", value: rootFieldParamID });
-  }
-  return immutableSelector;
-}
-
-function convertIDsToIndex(data, selector) {
-  return selector.reduce(function (reduction, value) {
-    if (reduction.newSelector.count() > 0 && reduction.newSelector.last() === null) return reduction;else {
-      if (typeof value == "string" || typeof value == "number") {
-        return {
-          rootData: reduction.rootData.get(value),
-          newSelector: reduction.newSelector.push(value)
-        };
-      } else {
-        if (value.type == "id") {
-          var selectedIndex = reduction.rootData.findIndex(function (item) {
-            return item.get("id") == value.value;
-          });
-          if (selectedIndex == -1) selectedIndex = null;
-          return {
-            rootData: selectedIndex ? reduction.rootData.get(selectedIndex) : null,
-            newSelector: reduction.newSelector.push(selectedIndex)
-          };
-        } else {
-          return reduction;
-        }
-      }
-    }
-  }, { rootData: data, newSelector: (0, _immutable.List)() }).newSelector.toJS();
-}
-
-function selectData(data, query) {
-  var selectorWithIDs = getImmutableSelector(query);
-  var selector = convertIDsToIndex(data, selectorWithIDs);
-  return (0, _immutable.Map)().set(selectorWithIDs[0], data.getIn(selector, null));
 }
 
 /***/ })
