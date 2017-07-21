@@ -1,6 +1,6 @@
 {
   "name": "redux-data-fetching",
-  "version": "1.9.1",
+  "version": "2.0.0",
   "description": "Redux and Normalizr based data managment utilities",
   "main": "dist/bundle.js",
   "scripts": {
@@ -9,12 +9,7 @@
     "build": "webpack",
     "build:watch": "webpack --watch"
   },
-  "keywords": [
-    "data",
-    "fetch",
-    "redux",
-    "normalizr"
-  ],
+  "keywords": ["data", "fetch", "redux", "normalizr"],
   "author": "alanzanattadev",
   "license": "ISC",
   "devDependencies": {
