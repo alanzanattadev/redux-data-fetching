@@ -1,40 +1,54 @@
-var path = require('path');
+var path = require("path");
 
 module.exports = {
-  entry: './lib/index.js',
+  entry: "./lib/index.js",
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-    library: 'ReduxDataFetching',
-    libraryTarget: 'umd',
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist"),
+    library: "ReduxDataFetching",
+    libraryTarget: "umd",
   },
   module: {
-    rules: [{
-      test: /\.js$/,
-      exclude: [/node_modules/],
-      use: [{
-        loader: 'babel-loader',
-      }]
-    }]
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: [/node_modules/],
+        use: [
+          {
+            loader: "babel-loader",
+          },
+        ],
+      },
+    ],
   },
   externals: {
     react: {
-        root: 'React',
-        commonjs2: 'react',
-        commonjs: 'react',
-        amd: 'react'
+      root: "React",
+      commonjs2: "react",
+      commonjs: "react",
+      amd: "react",
     },
-    'react-dom': {
-        root: 'ReactDOM',
-        commonjs2: 'react-dom',
-        commonjs: 'react-dom',
-        amd: 'react-dom'
+    "react-dom": {
+      root: "ReactDOM",
+      commonjs2: "react-dom",
+      commonjs: "react-dom",
+      amd: "react-dom",
     },
-    'graphql': {
-      commonjs2: 'graphql',
-      commonjs: 'graphql',
-      amd: 'graphql'
-    }
+    graphql: {
+      commonjs2: "graphql",
+      commonjs: "graphql",
+      amd: "graphql",
+    },
+    normalizr: {
+      commonjs2: "normalizr",
+      commonjs: "normalizr",
+      amd: "normalizr",
+    },
+    immutable: {
+      commonjs2: "immutable",
+      commonjs: "immutable",
+      amd: "immutable",
+    },
   },
-  devtool: 'source-map',
-}
+  devtool: "source-map",
+};
