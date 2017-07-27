@@ -9,7 +9,12 @@
     "build": "webpack",
     "build:watch": "webpack --watch"
   },
-  "keywords": ["data", "fetch", "redux", "normalizr"],
+  "keywords": [
+    "data",
+    "fetch",
+    "redux",
+    "normalizr"
+  ],
   "author": "alanzanattadev",
   "license": "ISC",
   "devDependencies": {
@@ -34,10 +39,11 @@
     "webpack-dev-server": "^2.5.0"
   },
   "dependencies": {
-    "graphql": "^0.10.3",
     "immutable": "3",
-    "lodash": "^4.17.4",
-    "normalizr": "^3.2.1",
-    "react": "^15.2.1"
+    "normalizr": "^3.2.1"
+  },
+  "peerDependencies": {
+    "graphql": "^0.10.5",
+    "react": "^15.6.1"
   }
 }
