@@ -778,11 +778,11 @@ function configureConnecter() {
             var _this2 = this;
 
             var query = mapPropsToNeeds(this.props);
-            var hash = (0, _utils.hashString)(query);
             var reducer = this.props[reducerName];
             if (query === "{}" || query === "{ }") {
               this.warnAgainstEmptyQuery();
             } else if (query != null) {
+              var hash = (0, _utils.hashString)(query);
               if (this.props.__debug) {
                 console.log("SELECTING data for hash", hash, " -- date:", Date.now());
               }
