@@ -964,7 +964,8 @@ function convertsTypeMapToSelectorTypeMap(typeMap) {
   var newTypeMap = {};
   Object.keys(typeMap).forEach(function (key) {
     var type = typeMap[key];
-    if ( /*isEntity(type) === true &&*/type instanceof _graphql.GraphQLObjectType) {
+    if (
+    /*isEntity(type) === true &&*/type instanceof _graphql.GraphQLObjectType && !key.startsWith("__")) {
       newTypeMap[getSelectorTypeName(key)] = convertsTypeToSelectorType(type, newTypeMap);
     } else {
       newTypeMap[key] = type;
