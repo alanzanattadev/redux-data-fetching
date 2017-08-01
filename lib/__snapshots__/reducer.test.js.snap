@@ -45,6 +45,36 @@ Object {
 }
 `;
 
+exports[`Reducer Query failed marks query progress in reducer as failed 1`] = `
+Object {
+  "entities": Object {},
+  "queries": Object {
+    "904239430": Object {
+      "progress": "failed",
+      "results": Object {
+        "byEntity": Object {},
+        "byQuery": Object {},
+      },
+    },
+  },
+}
+`;
+
+exports[`Reducer Query started puts query state in reducer 1`] = `
+Object {
+  "entities": Object {},
+  "queries": Object {
+    "904239430": Object {
+      "progress": "pending",
+      "results": Object {
+        "byEntity": Object {},
+        "byQuery": Object {},
+      },
+    },
+  },
+}
+`;
+
 exports[`Reducer Remove Data should remove several data 1`] = `
 Immutable.Map {
   entities: Immutable.Map {
@@ -105,6 +135,7 @@ Object {
   },
   "queries": Object {
     "queryhash": Object {
+      "progress": "succeed",
       "results": Object {
         "byEntity": Object {},
         "byQuery": Object {

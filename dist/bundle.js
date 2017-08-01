@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -320,12 +320,131 @@ function hashString(str) {
 
 "use strict";
 
+"use babel";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DataReducerRecord = exports.QueryRecord = exports.ResultsRecord = exports.QUERY_PROGRESS_FAILED = exports.QUERY_PROGRESS_SUCCEED = exports.QUERY_PROGRESS_PENDING = exports.QUERY_PROGRESS_NOT_STARTED = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.default = configureReducer;
+
+var _immutable = __webpack_require__(2);
+
+var _normalizr = __webpack_require__(3);
+
+var _graphqlTypesConverters = __webpack_require__(0);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var QUERY_PROGRESS_NOT_STARTED = exports.QUERY_PROGRESS_NOT_STARTED = "not started";
+var QUERY_PROGRESS_PENDING = exports.QUERY_PROGRESS_PENDING = "pending";
+var QUERY_PROGRESS_SUCCEED = exports.QUERY_PROGRESS_SUCCEED = "succeed";
+var QUERY_PROGRESS_FAILED = exports.QUERY_PROGRESS_FAILED = "failed";
+
+var ResultsRecord = exports.ResultsRecord = (0, _immutable.Record)({ byQuery: (0, _immutable.Map)(), byEntity: (0, _immutable.Map)() });
+var QueryRecord = exports.QueryRecord = (0, _immutable.Record)({
+  results: new ResultsRecord(),
+  progress: QUERY_PROGRESS_NOT_STARTED
+});
+var DataReducerRecord = exports.DataReducerRecord = (0, _immutable.Record)({
+  entities: (0, _immutable.Map)(),
+  queries: (0, _immutable.Map)()
+});
+
+function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
+  function warnBadIDRequest(type, supposedId) {
+    console.warn("You're trying to delete a key of bad type for type", type, ":", supposedId, ".Keys must be of type number, string or identified object eg: {id: 'key'}. Aborting request");
+  }
+
+  function getID(data) {
+    if (typeof data === "string") return data;else if (typeof data === "number") return data.toString();else if ((typeof data === "undefined" ? "undefined" : _typeof(data)) === "object" && data !== null) {
+      return getID(data.id);
+    } else {
+      return null;
+    }
+  }
+
+  return function reducer() {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new DataReducerRecord();
+    var action = arguments[1];
+
+    switch (action.type) {
+      case "DATA_RECEIVED":
+        var normalizrModel = Object.keys(action.payload.entities).reduce(function (red, key) {
+          var type = normalizrTypes[key];
+          if (type === undefined) throw new Error("You can't normalize a type which is not an Entity. An Entity is a type with an id attribut. You may have defined a GraphQL root query type with a route that has a type without any id.");
+          return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload.entities[key]) == "object" && Array.isArray(action.payload.entities[key]) ? [type] : type));
+        }, {});
+        var normalized = (0, _normalizr.normalize)(JSON.parse(JSON.stringify(action.payload.entities)), normalizrModel);
+        return state.update("entities", function (entities) {
+          return entities.mergeDeepWith(function (a, b) {
+            return b === undefined ? a : b;
+          }, (0, _graphqlTypesConverters.convertsNormalizedEntitiesToRecords)(normalized.entities, recordsTypes, graphQLSchema));
+        }).update("queries", function (queries) {
+          return action.payload.query ? queries.set(action.payload.query.request.hash, new QueryRecord({
+            results: new ResultsRecord({
+              byQuery: (0, _graphqlTypesConverters.convertsGraphQLResultToRootEntitiesIDs)(action.payload.query.response.raw)
+            }),
+            progress: QUERY_PROGRESS_SUCCEED
+          })) : queries;
+        });
+      case "DATA_REMOVED":
+        return Object.keys(action.payload).reduce(function (red, key) {
+          if (_typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key])) {
+            return action.payload[key].reduce(function (reduction, value) {
+              var id = getID(value);
+              if (id == null) {
+                warnBadIDRequest(key, value);
+                return reduction;
+              } else {
+                return reduction.deleteIn(["entities", key, id]);
+              }
+            }, red);
+          } else {
+            var _id = getID(action.payload[key]);
+            if (_id == null) {
+              warnBadIDRequest(key, action.payload[key]);
+              return red;
+            } else {
+              // $FlowFixMe
+              return red.deleteIn(["entities", key, _id]);
+            }
+          }
+        }, state);
+      case "QUERY_STARTED":
+        return state.update("queries", function (queries) {
+          return queries.update(action.payload.query.request.hash, function () {
+            var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new QueryRecord();
+            return query.set("progress", QUERY_PROGRESS_PENDING);
+          });
+        });
+      case "QUERY_FAILED":
+        return state.update("queries", function (queries) {
+          return queries.update(action.payload.query.request.hash, function (query) {
+            return query.set("progress", QUERY_PROGRESS_FAILED);
+          });
+        });
+      default:
+        return state;
+    }
+  };
+}
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _configurer = __webpack_require__(6);
+var _configurer = __webpack_require__(7);
 
 Object.defineProperty(exports, "configure", {
   enumerable: true,
@@ -350,7 +469,7 @@ Object.defineProperty(exports, "graphQLRecordr", {
 });
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -366,11 +485,11 @@ var _normalizr = __webpack_require__(3);
 
 var _graphql = __webpack_require__(1);
 
-var _middleware = __webpack_require__(7);
+var _middleware = __webpack_require__(8);
 
 var _middleware2 = _interopRequireDefault(_middleware);
 
-var _reducer = __webpack_require__(8);
+var _reducer = __webpack_require__(5);
 
 var _reducer2 = _interopRequireDefault(_reducer);
 
@@ -417,7 +536,7 @@ function configure(graphQLSchema, context) {
 }
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -432,22 +551,26 @@ exports.default = function (schema, actions, normalizrModel, context) {
     return function (next) {
       return function (action) {
         if (action.graphql) {
+          var hash = (0, _utils.hashString)(action.payload);
+          var request = {
+            ql: action.payload,
+            hash: hash
+          };
+          store.dispatch(actions.queryStarted({ request: request }));
           (0, _graphql.graphql)(schema, action.payload, undefined, {
             store: store,
             dependencies: context
           }).then(function (result) {
             if (result.errors === undefined) {
               store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data), {
-                request: {
-                  ql: action.payload,
-                  hash: (0, _utils.hashString)(action.payload)
-                },
+                request: request,
                 response: {
                   raw: result.data
                 }
               }));
             } else {
-              store.dispatch(actions.notifyError(result.errors, action.payload));
+              console.error("GraphQL query", action.payload, "has failed.\n", "errors:", result.errors);
+              store.dispatch(actions.queryFailed({ request: request }, result.errors));
             }
           });
         } else {
@@ -463,103 +586,6 @@ var _utils = __webpack_require__(4);
 var _graphql = __webpack_require__(1);
 
 var _graphqlTypesConverters = __webpack_require__(0);
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-"use babel";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.DataReducerRecord = exports.QueryRecord = exports.ResultsRecord = undefined;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-exports.default = configureReducer;
-
-var _immutable = __webpack_require__(2);
-
-var _normalizr = __webpack_require__(3);
-
-var _graphqlTypesConverters = __webpack_require__(0);
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var ResultsRecord = exports.ResultsRecord = (0, _immutable.Record)({ byQuery: (0, _immutable.Map)(), byEntity: (0, _immutable.Map)() });
-var QueryRecord = exports.QueryRecord = (0, _immutable.Record)({ results: new ResultsRecord() });
-var DataReducerRecord = exports.DataReducerRecord = (0, _immutable.Record)({
-  entities: (0, _immutable.Map)(),
-  queries: (0, _immutable.Map)()
-});
-
-function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
-  function warnBadIDRequest(type, supposedId) {
-    console.warn("You're trying to delete a key of bad type for type", type, ":", supposedId, ".Keys must be of type number, string or identified object eg: {id: 'key'}. Aborting request");
-  }
-
-  function getID(data) {
-    if (typeof data === "string") return data;else if (typeof data === "number") return data.toString();else if ((typeof data === "undefined" ? "undefined" : _typeof(data)) === "object" && data !== null) {
-      return getID(data.id);
-    } else {
-      return null;
-    }
-  }
-
-  return function reducer() {
-    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new DataReducerRecord();
-    var action = arguments[1];
-
-    switch (action.type) {
-      case "DATA_RECEIVED":
-        var normalizrModel = Object.keys(action.payload.entities).reduce(function (red, key) {
-          var type = normalizrTypes[key];
-          if (type === undefined) throw new Error("You can't normalize a type which is not an Entity. An Entity is a type with an id attribut. You may have defined a GraphQL root query type with a route that has a type without any id.");
-          return Object.assign({}, red, _defineProperty({}, key, _typeof(action.payload.entities[key]) == "object" && Array.isArray(action.payload.entities[key]) ? [type] : type));
-        }, {});
-        var normalized = (0, _normalizr.normalize)(JSON.parse(JSON.stringify(action.payload.entities)), normalizrModel);
-        return state.update("entities", function (entities) {
-          return entities.mergeDeepWith(function (a, b) {
-            return b === undefined ? a : b;
-          }, (0, _graphqlTypesConverters.convertsNormalizedEntitiesToRecords)(normalized.entities, recordsTypes, graphQLSchema));
-        }).update("queries", function (queries) {
-          return action.payload.query ? queries.set(action.payload.query.request.hash, new QueryRecord({
-            results: new ResultsRecord({
-              byQuery: (0, _graphqlTypesConverters.convertsGraphQLResultToRootEntitiesIDs)(action.payload.query.response.raw)
-            })
-          })) : queries;
-        });
-      case "DATA_REMOVED":
-        return Object.keys(action.payload).reduce(function (red, key) {
-          if (_typeof(action.payload[key]) == "object" && Array.isArray(action.payload[key])) {
-            return action.payload[key].reduce(function (reduction, value) {
-              var id = getID(value);
-              if (id == null) {
-                warnBadIDRequest(key, value);
-                return reduction;
-              } else {
-                return reduction.deleteIn(["entities", key, id]);
-              }
-            }, red);
-          } else {
-            var _id = getID(action.payload[key]);
-            if (_id == null) {
-              warnBadIDRequest(key, action.payload[key]);
-              return red;
-            } else {
-              // $FlowFixMe
-              return red.deleteIn(["entities", key, _id]);
-            }
-          }
-        }, state);
-      default:
-        return state;
-    }
-  };
-}
 
 /***/ }),
 /* 9 */
@@ -585,18 +611,26 @@ function configureActions() {
         }
       };
     },
+    queryStarted: function queryStarted(query) {
+      return {
+        type: "QUERY_STARTED",
+        payload: {
+          query: query
+        }
+      };
+    },
     removeData: function removeData(identifiers) {
       return {
         type: "DATA_REMOVED",
         payload: identifiers
       };
     },
-    notifyError: function notifyError(err, query) {
+    queryfailed: function queryfailed(query, errors) {
       return {
-        type: "GRAPHQL_ERRORS_RECEIVED",
+        type: "QUERY_FAILED",
         payload: {
-          errors: err,
-          query: query
+          query: query,
+          errors: errors
         }
       };
     }
@@ -633,7 +667,11 @@ var _graphqlTypesConverters = __webpack_require__(0);
 
 var _utils = __webpack_require__(4);
 
+var _reducer = __webpack_require__(5);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -662,6 +700,10 @@ function configureConnecter() {
     var shouldRefetch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {
       return false;
     };
+
+    var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
+        _ref2$queryProgressPr = _ref2.queryProgressPropName,
+        queryProgressPropName = _ref2$queryProgressPr === undefined ? "queryProgress" : _ref2$queryProgressPr;
 
     return function (WrappedComponent) {
       return function (_React$Component) {
@@ -764,7 +806,7 @@ function configureConnecter() {
 
             if (!this.props[reducerName]) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
             if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
-            return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), {
+            return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, this.props[reducerName].getIn(["queries", (0, _utils.hashString)(mapPropsToNeeds(this.props)), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED)), {
               refetch: function refetch() {
                 return _this3.getNeeds();
               }

@@ -1,0 +1,51 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HOC selects data in the cache 1`] = `
+Object {
+  "data": Object {
+    "entities": Object {
+      "User": Object {
+        "1": Object {
+          "friends": Array [
+            2,
+            3,
+          ],
+          "id": 1,
+          "name": "Alan",
+        },
+        "2": Object {
+          "friends": Array [
+            1,
+          ],
+          "id": 2,
+          "name": "Antoine",
+        },
+        "3": Object {
+          "friends": null,
+          "id": 3,
+          "name": "Sophie",
+        },
+      },
+    },
+    "queries": Object {
+      "1002205036": Object {
+        "progress": "not started",
+        "results": Object {
+          "byEntity": Object {},
+          "byQuery": Object {
+            "users": Array [
+              1,
+              2,
+            ],
+          },
+        },
+      },
+    },
+  },
+  "dispatch": [Function],
+  "queryProgress": "not started",
+  "refetch": [Function],
+  "users": Immutable.List [
+],
+}
+`;
