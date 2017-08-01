@@ -833,7 +833,9 @@ function configureConnecter() {
 
             if (!this.props[reducerName]) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
             if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
-            return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, this.props[reducerName].getIn(["queries", (0, _utils.hashString)(mapPropsToNeeds(this.props)), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED)), {
+            var needs = mapPropsToNeeds(this.props);
+            var queryProgress = needs !== null ? this.props[reducerName].getIn(["queries", (0, _utils.hashString)(needs), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
+            return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, queryProgress), {
               refetch: function refetch() {
                 return _this3.getNeeds();
               }
