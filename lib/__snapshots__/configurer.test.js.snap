@@ -5,8 +5,8 @@ Object {
   "GraphQLConnecter": [Function],
   "actions": Object {
     "packageData": [Function],
+    "queryFailed": [Function],
     "queryStarted": [Function],
-    "queryfailed": [Function],
     "removeData": [Function],
   },
   "middleware": [Function],

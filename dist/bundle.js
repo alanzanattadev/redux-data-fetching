@@ -652,7 +652,7 @@ function configureActions() {
         payload: identifiers
       };
     },
-    queryfailed: function queryfailed(query, errors) {
+    queryFailed: function queryFailed(query, errors) {
       return {
         type: "QUERY_FAILED",
         payload: {
