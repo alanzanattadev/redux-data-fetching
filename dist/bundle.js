@@ -453,6 +453,33 @@ Object.defineProperty(exports, "configure", {
   }
 });
 
+var _reducer = __webpack_require__(5);
+
+Object.defineProperty(exports, "QUERY_PROGRESS_NOT_STARTED", {
+  enumerable: true,
+  get: function get() {
+    return _reducer.QUERY_PROGRESS_NOT_STARTED;
+  }
+});
+Object.defineProperty(exports, "QUERY_PROGRESS_PENDING", {
+  enumerable: true,
+  get: function get() {
+    return _reducer.QUERY_PROGRESS_PENDING;
+  }
+});
+Object.defineProperty(exports, "QUERY_PROGRESS_SUCCEED", {
+  enumerable: true,
+  get: function get() {
+    return _reducer.QUERY_PROGRESS_SUCCEED;
+  }
+});
+Object.defineProperty(exports, "QUERY_PROGRESS_FAILED", {
+  enumerable: true,
+  get: function get() {
+    return _reducer.QUERY_PROGRESS_FAILED;
+  }
+});
+
 var _graphqlTypesConverters = __webpack_require__(0);
 
 Object.defineProperty(exports, "graphQLizr", {
