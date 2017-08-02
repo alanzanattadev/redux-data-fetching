@@ -298,28 +298,6 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
 
 "use strict";
 
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.hashString = hashString;
-function hashString(str) {
-  var hash = 0;
-  if (str.length == 0) return hash;
-  for (var i = 0; i < str.length; i++) {
-    var char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash;
-}
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 "use babel";
 
 Object.defineProperty(exports, "__esModule", {
@@ -434,6 +412,28 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
 }
 
 /***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.hashString = hashString;
+function hashString(str) {
+  var hash = 0;
+  if (str.length == 0) return hash;
+  for (var i = 0; i < str.length; i++) {
+    var char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -453,7 +453,7 @@ Object.defineProperty(exports, "configure", {
   }
 });
 
-var _reducer = __webpack_require__(5);
+var _reducer = __webpack_require__(4);
 
 Object.defineProperty(exports, "QUERY_PROGRESS_NOT_STARTED", {
   enumerable: true,
@@ -516,7 +516,7 @@ var _middleware = __webpack_require__(8);
 
 var _middleware2 = _interopRequireDefault(_middleware);
 
-var _reducer = __webpack_require__(5);
+var _reducer = __webpack_require__(4);
 
 var _reducer2 = _interopRequireDefault(_reducer);
 
@@ -608,7 +608,7 @@ exports.default = function (schema, actions, normalizrModel, context) {
   };
 };
 
-var _utils = __webpack_require__(4);
+var _utils = __webpack_require__(5);
 
 var _graphql = __webpack_require__(1);
 
@@ -692,9 +692,9 @@ var _immutable = __webpack_require__(2);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
-var _utils = __webpack_require__(4);
+var _utils = __webpack_require__(5);
 
-var _reducer = __webpack_require__(5);
+var _reducer = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -751,13 +751,70 @@ function configureConnecter() {
           key: "componentDidMount",
           value: function componentDidMount() {
             this.getNeeds();
-            this.selectData();
+            this.selectData(this.props);
+          }
+        }, {
+          key: "getReducer",
+          value: function getReducer(props) {
+            return props[reducerName];
+          }
+        }, {
+          key: "entityOfTypeAndIDHasChanged",
+          value: function entityOfTypeAndIDHasChanged(props, nextProps, entityName, id) {
+            return this.getReducer(props).getIn([entityName, id]) !== this.getReducer(nextProps).getIn([entityName, id]);
+          }
+        }, {
+          key: "entitiesOfTypeHasChangedForQuery",
+          value: function entitiesOfTypeHasChangedForQuery(props, nextProps, typeName, results) {
+            var _this2 = this;
+
+            return results.reduce(function (red, id) {
+              if (red === true) return true;else {
+                return _this2.entityOfTypeAndIDHasChanged(props, nextProps, typeName, id);
+              }
+            }, false);
+          }
+        }, {
+          key: "dataForQueryHasChanged",
+          value: function dataForQueryHasChanged(props, nextProps, query) {
+            var _this3 = this;
+
+            return query.results.byQuery.reduce(function (red, queryResults, queryName) {
+              var associatedQueryType = typesSchema.getQueryType().getFields()[queryName];
+              var entityName = (0, _graphql.getNamedType)(associatedQueryType.type).name;
+              if (Array.isArray(queryResults) || _immutable.List.isList(queryResults)) {
+                return _this3.entitiesOfTypeHasChangedForQuery(props, nextProps, entityName, queryResults);
+              } else {
+                return _this3.entityOfTypeAndIDHasChanged(props, nextProps, entityName, queryResults);
+              }
+            });
+          }
+        }, {
+          key: "mustReselectData",
+          value: function mustReselectData(props, nextProps) {
+            var currentReducer = this.getReducer(props);
+            var nextReducer = this.getReducer(nextProps);
+            var currentNeeds = mapPropsToNeeds(props);
+            var nextNeeds = mapPropsToNeeds(nextProps);
+            if (nextNeeds !== currentNeeds) return true;
+            var hash = currentNeeds != null ? (0, _utils.hashString)(currentNeeds) : null;
+            if (hash != null) {
+              var nextQuery = nextReducer.getIn(["queries", hash]);
+              var currentQuery = currentReducer.getIn(["queries", hash]);
+              if (nextQuery !== currentQuery) return true;else if (nextReducer.entities !== currentReducer.entities) {
+                return this.dataForQueryHasChanged(props, nextProps, nextQuery);
+              } else {
+                return false;
+              }
+            } else {
+              return false;
+            }
           }
         }, {
           key: "componentWillReceiveProps",
           value: function componentWillReceiveProps(nextProps) {
-            if (mapPropsToNeeds(nextProps) != mapPropsToNeeds(this.props) || nextProps[reducerName] !== this.props[reducerName]) {
-              this.selectData();
+            if (this.mustReselectData(this.props, nextProps)) {
+              this.selectData(nextProps);
             }
           }
         }, {
@@ -774,16 +831,16 @@ function configureConnecter() {
           }
         }, {
           key: "selectData",
-          value: function selectData() {
-            var _this2 = this;
+          value: function selectData(props) {
+            var _this4 = this;
 
-            var query = mapPropsToNeeds(this.props);
-            var reducer = this.props[reducerName];
+            var query = mapPropsToNeeds(props);
+            var reducer = this.getReducer(props);
             if (query === "{}" || query === "{ }") {
               this.warnAgainstEmptyQuery();
             } else if (query != null) {
               var hash = (0, _utils.hashString)(query);
-              if (this.props.__debug) {
+              if (props.__debug) {
                 console.log("SELECTING data for hash", hash, " -- date:", Date.now());
               }
               (0, _graphql.graphql)(selectorSchema, query, null, {
@@ -793,18 +850,18 @@ function configureConnecter() {
                 if (result.errors !== undefined || result.data == null) {
                   console.error("GraphQLConnecter: Impossible to select data. needs:", query, "errors:", result.errors);
                 } else {
-                  if (_this2.props.__debug) {
+                  if (props.__debug) {
                     console.log("SELECTED data", result.data, "for hash", hash, "with reducer", reducer, " -- date:", Date.now());
                   }
                   var convertedData = (0, _graphqlTypesConverters.convertsGraphQLResultToRecords)(result.data, typesSchema, recordTypes);
-                  var reducerChanged = _this2.props[reducerName] !== reducer;
-                  if (_this2.props.__debug) {
-                    console.log("CONVERTED data", result.data, "into", convertedData, "for hash", "with reducer", reducer, reducerChanged ? "but reducer has changed to" : "", reducerChanged ? _this2.props[reducerName] : "", reducerChanged ? "relaunching selection" : "");
+                  var reducerChanged = _this4.getReducer(props) !== reducer;
+                  if (props.__debug) {
+                    console.log("CONVERTED data", result.data, "into", convertedData, "for hash", "with reducer", reducer, reducerChanged ? "but reducer has changed to" : "", reducerChanged ? _this4.getReducer(props) : "", reducerChanged ? "relaunching selection" : "");
                   }
                   if (reducerChanged) {
-                    _this2.selectData();
+                    _this4.selectData(props);
                   } else {
-                    _this2.setState(function (state) {
+                    _this4.setState(function (state) {
                       return { selectedData: convertedData };
                     });
                   }
@@ -829,15 +886,16 @@ function configureConnecter() {
         }, {
           key: "render",
           value: function render() {
-            var _this3 = this;
+            var _this5 = this;
 
-            if (!this.props[reducerName]) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
+            var reducer = this.getReducer(this.props);
+            if (!reducer) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
             if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
             var needs = mapPropsToNeeds(this.props);
-            var queryProgress = needs !== null ? this.props[reducerName].getIn(["queries", (0, _utils.hashString)(needs), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
+            var queryProgress = needs !== null ? reducer.getIn(["queries", (0, _utils.hashString)(needs), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
             return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, queryProgress), {
               refetch: function refetch() {
-                return _this3.getNeeds();
+                return _this5.getNeeds();
               }
             }));
           }
