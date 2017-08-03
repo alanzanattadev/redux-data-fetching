@@ -209,6 +209,10 @@ function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
     throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
   }
   var graphQLType = graphQLSchema.getType(type);
+  if (recordsTypes[type] == null) {
+    console.error("You try to convert an entity of type", type, "into a Record but the type doesn't exist.\n", "Types that exist are", recordsTypes, "Entity value:", entity, "\nYou may have actions.packageData({ typeThatDoesntExist: value }).");
+    throw new Error("Aborting conversion of entity to immutable Record");
+  }
   // $FlowFixMe
   return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
     if (graphQLType instanceof _graphql.GraphQLObjectType && graphQLType.getFields()[key] == null) {
