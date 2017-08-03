@@ -208,8 +208,13 @@ function convertsEntityToRecord(entity, type, graphQLSchema, recordsTypes) {
     console.error("Trying to convert", entity, "into a Record of type", type);
     throw new Error("ILS is trying to convert an Array in a Record which is impossible, you may have called packageData with wrong types (Array instead of Object) or something wrong with the normalization");
   }
+  var graphQLType = graphQLSchema.getType(type);
   // $FlowFixMe
   return new recordsTypes[type](Object.keys(entity).reduce(function (red, key) {
+    if (graphQLType instanceof _graphql.GraphQLObjectType && graphQLType.getFields()[key] == null) {
+      console.warn("Trying to assign field", key, "to entity of type", type, "but it doesn't exist in the graphql data model. You may want to update the schema to have this new field. Aborting assignment");
+      return red;
+    }
     // $FlowFixMe
     var field = entity[key];
     if ((typeof field === "undefined" ? "undefined" : _typeof(field)) == "object" && Array.isArray(field) == false && field != null) {
@@ -802,7 +807,8 @@ function configureConnecter() {
               var nextQuery = nextReducer.getIn(["queries", hash]);
               var currentQuery = currentReducer.getIn(["queries", hash]);
               if (nextQuery !== currentQuery) return true;else if (nextReducer.entities !== currentReducer.entities) {
-                return this.dataForQueryHasChanged(props, nextProps, nextQuery);
+                return true;
+                // return this.dataForQueryHasChanged(props, nextProps, nextQuery);
               } else {
                 return false;
               }
