@@ -430,7 +430,33 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.TypeInfoWithValuesComparator = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 exports.hashString = hashString;
+exports.selectedDataHaveChanged = selectedDataHaveChanged;
+
+var _immutable = __webpack_require__(2);
+
+var _graphql = __webpack_require__(1);
+
+var _reducer = __webpack_require__(4);
+
+var _graphqlTypesConverters = __webpack_require__(0);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 function hashString(str) {
   var hash = 0;
   if (str.length == 0) return hash;
@@ -440,6 +466,197 @@ function hashString(str) {
     hash = hash & hash; // Convert to 32bit integer
   }
   return hash;
+}
+
+var TypeInfoWithValuesComparator = exports.TypeInfoWithValuesComparator = function (_TypeInfo) {
+  _inherits(TypeInfoWithValuesComparator, _TypeInfo);
+
+  function TypeInfoWithValuesComparator(_ref) {
+    var schema = _ref.schema,
+        reducer1 = _ref.reducer1,
+        reducer2 = _ref.reducer2,
+        queryHash1 = _ref.queryHash1,
+        queryHash2 = _ref.queryHash2;
+
+    _classCallCheck(this, TypeInfoWithValuesComparator);
+
+    var _this = _possibleConstructorReturn(this, (TypeInfoWithValuesComparator.__proto__ || Object.getPrototypeOf(TypeInfoWithValuesComparator)).call(this, schema));
+
+    _this._value1Stack = (0, _immutable.Stack)();
+    _this._value2Stack = (0, _immutable.Stack)();
+    _this._reducer1 = reducer1;
+    _this._reducer2 = reducer2;
+    _this._queryHash1 = queryHash1;
+    _this._queryHash2 = queryHash2;
+    _this._shouldBreak = false;
+    return _this;
+  }
+
+  _createClass(TypeInfoWithValuesComparator, [{
+    key: "_getQueryValue",
+    value: function _getQueryValue(node, reducer, queryHash) {
+      if (reducer == null || queryHash == null) throw new Error("Trying to determine whether selection of data has to be relaunched, but encounterd an error. Missing dependency on reducer or queryHash");
+      var queryResult = reducer.getIn(["queries", queryHash, "results", "byQuery", node.alias != null ? node.alias.value : node.name.value]);
+      var currentType = this.getType();
+      if (queryResult == null) {
+        if (currentType instanceof _graphql.GraphQLList) return [];else return null;
+      }
+      if (currentType instanceof _graphql.GraphQLList) {
+        var typeName = (0, _graphql.getNamedType)(currentType.ofType).name;
+        return queryResult.map(function (id) {
+          return reducer.getIn(["entities", typeName, id.toString()]);
+        });
+      } else if (queryResult != null) {
+        var namedType = (0, _graphql.getNamedType)(currentType);
+        if (namedType != undefined) {
+          return reducer.getIn(["entities", namedType.name, queryResult.toString()]);
+        } else {
+          console.error("CurrentType:", currentType);
+          throw new Error("Weird behavior has been encountered with an unnamed type as current type");
+        }
+      } else {
+        return null;
+      }
+    }
+  }, {
+    key: "_getEntityValue",
+    value: function _getEntityValue(node, reducer, lastValue) {
+      var _this2 = this;
+
+      if (node.selectionSet != null && (typeof lastValue === "undefined" ? "undefined" : _typeof(lastValue)) === "object" && lastValue != null) {
+        var fieldName = node.alias ? node.alias.value : node.name.value;
+        if (Array.isArray(lastValue) || _immutable.List.isList(lastValue))
+          // $FlowFixMe
+          return lastValue.map(function (v) {
+            return _this2._getEntityValue(node, reducer, v);
+          });
+        var fieldValue = lastValue[fieldName];
+        var namedType = (0, _graphql.getNamedType)(this.getType());
+        if (namedType && (0, _graphqlTypesConverters.isEntity)(namedType) === false) {
+          return fieldValue;
+        }
+        if (this.getType() instanceof _graphql.GraphQLList && fieldValue != null && (Array.isArray(fieldValue) || _immutable.List.isList(fieldValue))) {
+          if (namedType) {
+            var entityName = namedType.name;
+            // $FlowFixMe
+            return fieldValue.map(function (id) {
+              return reducer.getIn(["entities", entityName, id.toString()]);
+            });
+          } else {
+            console.error("Weird state encountered trying to get the named type of", this.getType(), "at node", node, "knowing that ", fieldValue, "is an Array or a Immutable.List");
+            throw new Error("Aborting.");
+          }
+        } else if (fieldValue != null) {
+          if (namedType) {
+            var _entityName = namedType.name;
+            // $FlowFixMe
+            return reducer.getIn(["entities", _entityName, fieldValue.toString()]);
+          } else {
+            console.error("Weird state encountered trying to get the named type of", this.getType(), "at node", node, "knowing that ", fieldValue, "is an Object or a Immutable.Record");
+            throw new Error("Aborting.");
+          }
+        } else {
+          return null;
+        }
+      } else {
+        return lastValue;
+      }
+    }
+  }, {
+    key: "_haveChanged",
+    value: function _haveChanged(value1, value2) {
+      var _this3 = this;
+
+      if ((typeof value1 === "undefined" ? "undefined" : _typeof(value1)) !== (typeof value2 === "undefined" ? "undefined" : _typeof(value2))) return true;
+      if (Array.isArray(value1) || _immutable.List.isList(value1)) {
+        if (Array.isArray(value2) === true || _immutable.List.isList(value2) === true) {
+          // $FlowFixMe
+          return value1.some(function (v1, i) {
+            return _this3._haveChanged(v1,
+            // $FlowFixMe
+            Array.isArray(value2) ? value2[i] : value2.get(i));
+          });
+        } else return true;
+      } else if ((typeof value1 === "undefined" ? "undefined" : _typeof(value1)) === "object" && value1 !== null) {
+        if (value2 === null) return true;
+        return value1 !== value2;
+      } else {
+        return value1 !== value2;
+      }
+    }
+  }, {
+    key: "enter",
+    value: function enter(node) {
+      _get(TypeInfoWithValuesComparator.prototype.__proto__ || Object.getPrototypeOf(TypeInfoWithValuesComparator.prototype), "enter", this).call(this, node);
+      if (node.kind === _graphql.Kind.FIELD) {
+        var value1 = void 0;
+        var value2 = void 0;
+        if (this.getParentType() === this._schema.getQueryType()) {
+          value1 = this._getQueryValue(node, this._reducer1, this._queryHash1);
+          this._value1Stack = this._value1Stack.unshift(value1);
+          value2 = this._getQueryValue(node, this._reducer2, this._queryHash2);
+          this._value2Stack = this._value2Stack.push(value2);
+        } else {
+          value1 = this._getEntityValue(node, this._reducer1, this._value1Stack.peek());
+          this._value1Stack = this._value1Stack.push(value1);
+          value2 = this._getEntityValue(node, this._reducer2, this._value2Stack.peek());
+          this._value2Stack = this._value2Stack.push(value2);
+        }
+        if (this._shouldBreak === false) {
+          this._shouldBreak = this._haveChanged(value1, value2);
+        }
+      }
+    }
+  }, {
+    key: "leave",
+    value: function leave(node) {
+      if (node.kind === _graphql.Kind.FIELD) {
+        this._value1Stack = this._value1Stack.pop();
+        this._value2Stack = this._value2Stack.pop();
+      }
+      _get(TypeInfoWithValuesComparator.prototype.__proto__ || Object.getPrototypeOf(TypeInfoWithValuesComparator.prototype), "leave", this).call(this, node);
+    }
+  }, {
+    key: "getValue1",
+    value: function getValue1() {
+      return this._value1Stack.peek();
+    }
+  }, {
+    key: "getValue2",
+    value: function getValue2() {
+      return this._value2Stack.peek();
+    }
+  }, {
+    key: "shouldBreak",
+    value: function shouldBreak() {
+      return this._shouldBreak;
+    }
+  }]);
+
+  return TypeInfoWithValuesComparator;
+}(_graphql.TypeInfo);
+
+function selectedDataHaveChanged(_ref2) {
+  var query = _ref2.query,
+      schema = _ref2.schema,
+      queryHash = _ref2.queryHash,
+      reducer1 = _ref2.reducer1,
+      reducer2 = _ref2.reducer2;
+
+  var typeInfo = new TypeInfoWithValuesComparator({
+    schema: schema,
+    reducer1: reducer1,
+    reducer2: reducer2,
+    queryHash1: queryHash,
+    queryHash2: queryHash
+  });
+  var hasChanged = false;
+  (0, _graphql.visit)((0, _graphql.parse)(query), (0, _graphql.visitWithTypeInfo)(typeInfo, _defineProperty({}, _graphql.Kind.FIELD, {
+    enter: function enter(node) {
+      hasChanged = typeInfo.shouldBreak();
+    }
+  })));
+  return hasChanged;
 }
 
 /***/ }),
@@ -768,37 +985,6 @@ function configureConnecter() {
             return props[reducerName];
           }
         }, {
-          key: "entityOfTypeAndIDHasChanged",
-          value: function entityOfTypeAndIDHasChanged(props, nextProps, entityName, id) {
-            return this.getReducer(props).getIn([entityName, id]) !== this.getReducer(nextProps).getIn([entityName, id]);
-          }
-        }, {
-          key: "entitiesOfTypeHasChangedForQuery",
-          value: function entitiesOfTypeHasChangedForQuery(props, nextProps, typeName, results) {
-            var _this2 = this;
-
-            return results.reduce(function (red, id) {
-              if (red === true) return true;else {
-                return _this2.entityOfTypeAndIDHasChanged(props, nextProps, typeName, id);
-              }
-            }, false);
-          }
-        }, {
-          key: "dataForQueryHasChanged",
-          value: function dataForQueryHasChanged(props, nextProps, query) {
-            var _this3 = this;
-
-            return query.results.byQuery.reduce(function (red, queryResults, queryName) {
-              var associatedQueryType = typesSchema.getQueryType().getFields()[queryName];
-              var entityName = (0, _graphql.getNamedType)(associatedQueryType.type).name;
-              if (Array.isArray(queryResults) || _immutable.List.isList(queryResults)) {
-                return _this3.entitiesOfTypeHasChangedForQuery(props, nextProps, entityName, queryResults);
-              } else {
-                return _this3.entityOfTypeAndIDHasChanged(props, nextProps, entityName, queryResults);
-              }
-            });
-          }
-        }, {
           key: "mustReselectData",
           value: function mustReselectData(props, nextProps) {
             var currentReducer = this.getReducer(props);
@@ -811,8 +997,13 @@ function configureConnecter() {
               var nextQuery = nextReducer.getIn(["queries", hash]);
               var currentQuery = currentReducer.getIn(["queries", hash]);
               if (nextQuery !== currentQuery) return true;else if (nextReducer.entities !== currentReducer.entities) {
-                return true;
-                // return this.dataForQueryHasChanged(props, nextProps, nextQuery);
+                return (0, _utils.selectedDataHaveChanged)({
+                  schema: typesSchema,
+                  query: currentNeeds,
+                  queryHash: hash,
+                  reducer1: currentReducer,
+                  reducer2: nextReducer
+                });
               } else {
                 return false;
               }
@@ -842,7 +1033,7 @@ function configureConnecter() {
         }, {
           key: "selectData",
           value: function selectData(props) {
-            var _this4 = this;
+            var _this2 = this;
 
             var query = mapPropsToNeeds(props);
             var reducer = this.getReducer(props);
@@ -864,14 +1055,14 @@ function configureConnecter() {
                     console.log("SELECTED data", result.data, "for hash", hash, "with reducer", reducer, " -- date:", Date.now());
                   }
                   var convertedData = (0, _graphqlTypesConverters.convertsGraphQLResultToRecords)(result.data, typesSchema, recordTypes);
-                  var reducerChanged = _this4.getReducer(props) !== reducer;
+                  var reducerChanged = _this2.getReducer(props) !== reducer;
                   if (props.__debug) {
-                    console.log("CONVERTED data", result.data, "into", convertedData, "for hash", "with reducer", reducer, reducerChanged ? "but reducer has changed to" : "", reducerChanged ? _this4.getReducer(props) : "", reducerChanged ? "relaunching selection" : "");
+                    console.log("CONVERTED data", result.data, "into", convertedData, "for hash", "with reducer", reducer, reducerChanged ? "but reducer has changed to" : "", reducerChanged ? _this2.getReducer(props) : "", reducerChanged ? "relaunching selection" : "");
                   }
                   if (reducerChanged) {
-                    _this4.selectData(props);
+                    _this2.selectData(props);
                   } else {
-                    _this4.setState(function (state) {
+                    _this2.setState(function (state) {
                       return { selectedData: convertedData };
                     });
                   }
@@ -896,7 +1087,7 @@ function configureConnecter() {
         }, {
           key: "render",
           value: function render() {
-            var _this5 = this;
+            var _this3 = this;
 
             var reducer = this.getReducer(this.props);
             if (!reducer) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
@@ -905,7 +1096,7 @@ function configureConnecter() {
             var queryProgress = needs !== null ? reducer.getIn(["queries", (0, _utils.hashString)(needs), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
             return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, queryProgress), {
               refetch: function refetch() {
-                return _this5.getNeeds();
+                return _this3.getNeeds();
               }
             }));
           }
