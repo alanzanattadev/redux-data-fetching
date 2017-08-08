@@ -7,7 +7,7 @@
 		exports["ReduxDataFetching"] = factory(require("graphql"), require("immutable"), require("normalizr"), require("react"));
 	else
 		root["ReduxDataFetching"] = factory(root[undefined], root[undefined], root[undefined], root["React"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_11__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_11__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -105,7 +105,7 @@ exports.convertsGraphQLResultToRootEntitiesIDs = convertsGraphQLResultToRootEnti
 exports.convertsGraphQLQueryResultToRecords = convertsGraphQLQueryResultToRecords;
 exports.convertsGraphQLResultToRecords = convertsGraphQLResultToRecords;
 
-var _normalizr = __webpack_require__(3);
+var _normalizr = __webpack_require__(4);
 
 var _graphql = __webpack_require__(1);
 
@@ -297,12 +297,6 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
-
-/***/ }),
-/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -320,7 +314,7 @@ exports.default = configureReducer;
 
 var _immutable = __webpack_require__(2);
 
-var _normalizr = __webpack_require__(3);
+var _normalizr = __webpack_require__(4);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
@@ -421,6 +415,12 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
 }
 
 /***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
+
+/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -445,7 +445,7 @@ var _immutable = __webpack_require__(2);
 
 var _graphql = __webpack_require__(1);
 
-var _reducer = __webpack_require__(4);
+var _reducer = __webpack_require__(3);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
@@ -679,7 +679,7 @@ Object.defineProperty(exports, "configure", {
   }
 });
 
-var _reducer = __webpack_require__(4);
+var _reducer = __webpack_require__(3);
 
 Object.defineProperty(exports, "QUERY_PROGRESS_NOT_STARTED", {
   enumerable: true,
@@ -734,7 +734,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.configure = configure;
 
-var _normalizr = __webpack_require__(3);
+var _normalizr = __webpack_require__(4);
 
 var _graphql = __webpack_require__(1);
 
@@ -742,7 +742,7 @@ var _middleware = __webpack_require__(8);
 
 var _middleware2 = _interopRequireDefault(_middleware);
 
-var _reducer = __webpack_require__(4);
+var _reducer = __webpack_require__(3);
 
 var _reducer2 = _interopRequireDefault(_reducer);
 
@@ -920,7 +920,7 @@ var _graphqlTypesConverters = __webpack_require__(0);
 
 var _utils = __webpack_require__(5);
 
-var _reducer = __webpack_require__(4);
+var _reducer = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1039,6 +1039,7 @@ function configureConnecter() {
             var reducer = this.getReducer(props);
             if (query === "{}" || query === "{ }") {
               this.warnAgainstEmptyQuery();
+              this.resetSelection();
             } else if (query != null) {
               var hash = (0, _utils.hashString)(query);
               if (props.__debug) {
@@ -1068,7 +1069,16 @@ function configureConnecter() {
                   }
                 }
               });
+            } else {
+              this.resetSelection();
             }
+          }
+        }, {
+          key: "resetSelection",
+          value: function resetSelection() {
+            this.setState(function (state) {
+              return { selectedData: {} };
+            });
           }
         }, {
           key: "getNeeds",
