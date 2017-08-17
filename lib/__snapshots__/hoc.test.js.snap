@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HOC selects data in the cache 1`] = `
+exports[`HOC GraphQLConnecter selects data in the cache 1`] = `
 Object {
   "data": Object {
     "entities": Object {
