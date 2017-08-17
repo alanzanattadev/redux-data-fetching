@@ -4,7 +4,9 @@ exports[`Configurer returns the differents models 1`] = `
 Object {
   "GraphQLConnecter": [Function],
   "actions": Object {
+    "bustQueryCache": [Function],
     "fetchData": [Function],
+    "mutateData": [Function],
     "packageData": [Function],
     "queryFailed": [Function],
     "queryStarted": [Function],
