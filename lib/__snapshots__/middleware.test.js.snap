@@ -207,3 +207,9 @@ Array [
   ],
 ]
 `;
+
+exports[`Middleware GRAPHQL_MUTATION doesn't error with variables 1`] = `"DATA_RECEIVED"`;
+
+exports[`Middleware GRAPHQL_MUTATION doesn't error without variables 1`] = `"DATA_RECEIVED"`;
+
+exports[`Middleware GRAPHQL_MUTATION doesn't error without variables and without name 1`] = `"DATA_RECEIVED"`;
