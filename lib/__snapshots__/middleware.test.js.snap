@@ -100,3 +100,110 @@ Array [
   ],
 ]
 `;
+
+exports[`Middleware GRAPHQL_MUTATION calls onCompleted 1`] = `undefined`;
+
+exports[`Middleware GRAPHQL_MUTATION calls onError if query fails 1`] = `undefined`;
+
+exports[`Middleware GRAPHQL_MUTATION dispatches queryStarted and packageData 1`] = `
+Array [
+  Array [
+    Object {
+      "payload": Object {
+        "query": Object {
+          "request": Object {
+            "hash": "id",
+            "ql": "mutation CreateUser {
+              createUser {
+              id,
+              name
+            }
+          }",
+          },
+        },
+      },
+      "type": "QUERY_STARTED",
+    },
+  ],
+  Array [
+    Object {
+      "payload": Object {
+        "entities": Object {
+          "User": Array [
+            Object {
+              "id": "1",
+              "name": "Alan",
+            },
+          ],
+        },
+        "query": Object {
+          "request": Object {
+            "hash": "id",
+            "ql": "mutation CreateUser {
+              createUser {
+              id,
+              name
+            }
+          }",
+          },
+          "response": Object {
+            "raw": Object {
+              "createUser": Object {
+                "id": "1",
+                "name": "Alan",
+              },
+            },
+          },
+        },
+      },
+      "type": "DATA_RECEIVED",
+    },
+  ],
+]
+`;
+
+exports[`Middleware GRAPHQL_MUTATION dispatches queryStarted and queryFailed if query fails 1`] = `
+Array [
+  Array [
+    Object {
+      "payload": Object {
+        "query": Object {
+          "request": Object {
+            "hash": "id",
+            "ql": "mutation CreateUser($input: User) {
+              createUser (badarg: 2) {
+              id,
+              name
+            }
+          }",
+          },
+        },
+      },
+      "type": "QUERY_STARTED",
+    },
+  ],
+  Array [
+    Object {
+      "payload": Object {
+        "errors": Array [
+          [GraphQLError: Variable "$input" cannot be non-input type "User".],
+          [GraphQLError: Unknown argument "badarg" on field "createUser" of type "RootMutation".],
+          [GraphQLError: Variable "$input" is never used in operation "CreateUser".],
+        ],
+        "query": Object {
+          "request": Object {
+            "hash": "id",
+            "ql": "mutation CreateUser($input: User) {
+              createUser (badarg: 2) {
+              id,
+              name
+            }
+          }",
+          },
+        },
+      },
+      "type": "QUERY_FAILED",
+    },
+  ],
+]
+`;
