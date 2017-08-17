@@ -1,5 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Converters To Entity based data getConvertersFromSchema gets converters from query and mutation types 1`] = `
+Object {
+  "createUser": "User",
+  "skills": "Skill",
+  "user": "User",
+  "users": "User",
+}
+`;
+
 exports[`Converters To immutable records entities to immutable records should converts basic entities correctly 1`] = `
 Object {
   "Skill": Object {
@@ -34,6 +43,9 @@ Object {
 
 exports[`Converters To immutable records schema to immutable records should converts basic schema correctly 1`] = `
 Object {
+  "RootMutation": Object {
+    "createUser": undefined,
+  },
   "RootQueryType": Object {
     "skills": undefined,
     "user": undefined,
@@ -55,6 +67,7 @@ Object {
 exports[`Converters To normalizr Schema to normalizr model should convert basic schema correctly 1`] = `
 Object {
   "converters": Object {
+    "createUser": "User",
     "skills": "Skill",
     "user": "User",
     "users": "User",
