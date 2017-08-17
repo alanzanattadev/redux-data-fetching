@@ -1,5 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Reducer Busts query cache removes the query if it exists 1`] = `
+Object {
+  "entities": Object {},
+  "queries": Object {},
+}
+`;
+
 exports[`Reducer Package Data should package data correctly 1`] = `
 Object {
   "entities": Object {
