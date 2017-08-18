@@ -55,6 +55,15 @@ Array [
 ]
 `;
 
+exports[`HOC DataHandlers dispatches mutations when a handler is called 2`] = `
+Array [
+  Array [
+    "a",
+    "b",
+  ],
+]
+`;
+
 exports[`HOC DataHandlers passes the query progress as props 1`] = `"not started"`;
 
 exports[`HOC DataHandlers passes the query progress as props 2`] = `"pending"`;
