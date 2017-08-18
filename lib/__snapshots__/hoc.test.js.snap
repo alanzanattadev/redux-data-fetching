@@ -44,7 +44,7 @@ Array [
           "mutationQL": "mutation {}",
           "onCompleted": [Function],
           "onError": [Function],
-          "operationName": "onClick",
+          "operationName": undefined,
           "variables": Object {},
         },
         "queryID": 1385894182,
