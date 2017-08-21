@@ -7,7 +7,7 @@
 		exports["ReduxDataFetching"] = factory(require("graphql"), require("immutable"), require("normalizr"), require("react"));
 	else
 		root["ReduxDataFetching"] = factory(root[undefined], root[undefined], root[undefined], root["React"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_11__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_5__, __WEBPACK_EXTERNAL_MODULE_13__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -85,9 +85,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 exports.isEntity = isEntity;
 exports.createEntitiesForTypes = createEntitiesForTypes;
@@ -105,7 +105,7 @@ exports.convertsGraphQLResultToRootEntitiesIDs = convertsGraphQLResultToRootEnti
 exports.convertsGraphQLQueryResultToRecords = convertsGraphQLQueryResultToRecords;
 exports.convertsGraphQLResultToRecords = convertsGraphQLResultToRecords;
 
-var _normalizr = __webpack_require__(4);
+var _normalizr = __webpack_require__(5);
 
 var _graphql = __webpack_require__(1);
 
@@ -172,12 +172,26 @@ function addDefinitionsForTypes(typesMap, entities) {
 }
 
 function getConvertersFromSchema(schema) {
-  return Object.keys(schema.getQueryType().getFields()).reduce(function (red, field) {
-    var type = schema.getQueryType().getFields()[field].type;
+  function getNameOfType(type) {
     var entityType = void 0;
     if (type instanceof _graphql.GraphQLList) entityType = (0, _graphql.getNamedType)(type).name;else if (type instanceof _graphql.GraphQLEnumType) entityType = type.name;else entityType = (0, _graphql.getNamedType)(type).name;
+    return entityType;
+  }
+
+  var queryTypeConverters = Object.keys(schema.getQueryType().getFields()).reduce(function (red, field) {
+    var type = schema.getQueryType().getFields()[field].type;
+    var entityType = (0, _graphql.getNamedType)(type);
     return Object.assign({}, red, _defineProperty({}, field, entityType));
   }, {});
+
+  var mutationType = schema.getMutationType();
+  var mutationTypeConverters = mutationType ? Object.keys(mutationType.getFields()).reduce(function (red, field) {
+    var type = mutationType.getFields()[field].type;
+    var entityType = (0, _graphql.getNamedType)(type);
+    return Object.assign({}, red, _defineProperty({}, field, entityType));
+  }, {}) : {};
+
+  return _extends({}, mutationTypeConverters, queryTypeConverters);
 }
 
 function getDataFromResponse(converters, data) {
@@ -314,7 +328,7 @@ exports.default = configureReducer;
 
 var _immutable = __webpack_require__(2);
 
-var _normalizr = __webpack_require__(4);
+var _normalizr = __webpack_require__(5);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
@@ -365,7 +379,7 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
             return b === undefined ? a : b;
           }, (0, _graphqlTypesConverters.convertsNormalizedEntitiesToRecords)(normalized.entities, recordsTypes, graphQLSchema));
         }).update("queries", function (queries) {
-          return action.payload.query ? queries.set(action.payload.query.request.hash, new QueryRecord({
+          return action.payload.query ? queries.set(action.payload.query.request.hash.toString(), new QueryRecord({
             results: new ResultsRecord({
               byQuery: (0, _graphqlTypesConverters.convertsGraphQLResultToRootEntitiesIDs)(action.payload.query.response.raw)
             }),
@@ -397,16 +411,20 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
         }, state);
       case "QUERY_STARTED":
         return state.update("queries", function (queries) {
-          return queries.update(action.payload.query.request.hash, function () {
+          return queries.update(action.payload.query.request.hash.toString(), function () {
             var query = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new QueryRecord();
             return query.set("progress", QUERY_PROGRESS_PENDING);
           });
         });
       case "QUERY_FAILED":
         return state.update("queries", function (queries) {
-          return queries.update(action.payload.query.request.hash, function (query) {
+          return queries.update(action.payload.query.request.hash.toString(), function (query) {
             return query.set("progress", QUERY_PROGRESS_FAILED);
           });
+        });
+      case "QUERY_CACHE_BUSTED":
+        return state.update("queries", function (queries) {
+          return queries.remove(action.payload.queryID.toString());
         });
       default:
         return state;
@@ -416,12 +434,69 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Mutation = function () {
+  function Mutation() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        mutationQL = _ref.mutationQL,
+        _ref$variables = _ref.variables,
+        variables = _ref$variables === undefined ? {} : _ref$variables,
+        _ref$onError = _ref.onError,
+        onError = _ref$onError === undefined ? function () {} : _ref$onError,
+        _ref$onCompleted = _ref.onCompleted,
+        onCompleted = _ref$onCompleted === undefined ? function () {} : _ref$onCompleted,
+        operationName = _ref.operationName;
+
+    _classCallCheck(this, Mutation);
+
+    if (mutationQL == null) {
+      throw new Error("mutationQL has to be defined in the params of new Mutation: new Mutation({mutationQL: `mutation ...`})");
+    }
+    this.mutationQL = mutationQL;
+    this.variables = variables;
+    this.onError = onError;
+    this.onCompleted = onCompleted;
+    this.operationName = operationName;
+  }
+
+  _createClass(Mutation, [{
+    key: "setOperationName",
+    value: function setOperationName(name) {
+      return new Mutation({
+        mutationQL: this.mutationQL,
+        variables: this.variables,
+        onError: this.onError,
+        onCompleted: this.onCompleted,
+        operationName: name
+      });
+    }
+  }]);
+
+  return Mutation;
+}();
+
+exports.default = Mutation;
 
 /***/ }),
 /* 5 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -439,6 +514,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 exports.hashString = hashString;
+exports.hashMutationQuery = hashMutationQuery;
+exports.generateUUID = generateUUID;
 exports.selectedDataHaveChanged = selectedDataHaveChanged;
 
 var _immutable = __webpack_require__(2);
@@ -466,6 +543,22 @@ function hashString(str) {
     hash = hash & hash; // Convert to 32bit integer
   }
   return hash;
+}
+
+function hashMutationQuery(query, id) {
+  return hashString("mutation-" + id + "-" + query);
+}
+
+function generateUUID() {
+  var d = new Date().getTime();
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    d += performance.now(); //use high-precision timer if available
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c === "x" ? r : r & 0x3 | 0x8).toString(16);
+  });
 }
 
 var TypeInfoWithValuesComparator = exports.TypeInfoWithValuesComparator = function (_TypeInfo) {
@@ -660,7 +753,7 @@ function selectedDataHaveChanged(_ref2) {
 }
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -670,12 +763,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _configurer = __webpack_require__(7);
+var _configurer = __webpack_require__(8);
 
 Object.defineProperty(exports, "configure", {
   enumerable: true,
   get: function get() {
     return _configurer.configure;
+  }
+});
+
+var _Mutation = __webpack_require__(4);
+
+Object.defineProperty(exports, "Mutation", {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_Mutation).default;
   }
 });
 
@@ -721,8 +823,10 @@ Object.defineProperty(exports, "graphQLRecordr", {
   }
 });
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -734,11 +838,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.configure = configure;
 
-var _normalizr = __webpack_require__(4);
+var _normalizr = __webpack_require__(5);
 
 var _graphql = __webpack_require__(1);
 
-var _middleware = __webpack_require__(8);
+var _middleware = __webpack_require__(9);
 
 var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -746,22 +850,22 @@ var _reducer = __webpack_require__(3);
 
 var _reducer2 = _interopRequireDefault(_reducer);
 
-var _actions = __webpack_require__(9);
+var _actions = __webpack_require__(11);
 
 var _actions2 = _interopRequireDefault(_actions);
 
-var _hoc = __webpack_require__(10);
+var _hoc = __webpack_require__(12);
 
 var _hoc2 = _interopRequireDefault(_hoc);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
-var _selectors = __webpack_require__(12);
+var _selectors = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function configure(graphQLSchema, context) {
-  var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+function configure(graphQLSchema, context, rootValue) {
+  var _ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
       _ref$__debug = _ref.__debug,
       __debug = _ref$__debug === undefined ? false : _ref$__debug;
 
@@ -770,13 +874,19 @@ function configure(graphQLSchema, context) {
   var normalizrModel = (0, _graphqlTypesConverters.graphQLizr)(graphQLCompiledSchema);
   var recordsModel = (0, _graphqlTypesConverters.graphQLRecordr)(graphQLCompiledSchema);
   var actions = (0, _actions2.default)();
-  var middleware = (0, _middleware2.default)(graphQLCompiledSchema, actions, normalizrModel, context);
+  var middleware = (0, _middleware2.default)(graphQLCompiledSchema, actions, normalizrModel, context, rootValue);
   var reducer = (0, _reducer2.default)(normalizrModel.entities, recordsModel, graphQLCompiledSchema);
-  var GraphQLConnecter = (0, _hoc2.default)({
+
+  var _configureConnecter = (0, _hoc2.default)({
     selectorSchema: selectorSchema,
     typesSchema: graphQLCompiledSchema,
-    recordTypes: recordsModel
-  });
+    recordTypes: recordsModel,
+    actions: actions
+  }),
+      GraphQLConnecter = _configureConnecter.GraphQLConnecter,
+      DataFetcher = _configureConnecter.DataFetcher,
+      DataHandlers = _configureConnecter.DataHandlers;
+
   return {
     actions: actions,
     middleware: middleware,
@@ -784,12 +894,14 @@ function configure(graphQLSchema, context) {
     normalizrModel: normalizrModel,
     recordsModel: recordsModel,
     selectorSchema: selectorSchema,
-    GraphQLConnecter: GraphQLConnecter
+    GraphQLConnecter: GraphQLConnecter,
+    DataFetcher: DataFetcher,
+    DataHandlers: DataHandlers
   };
 }
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -799,33 +911,65 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = function (schema, actions, normalizrModel, context) {
+exports.default = function (schema, actions, normalizrModel, context, rootValue) {
   return function (store) {
     return function (next) {
       return function (action) {
-        if (action.graphql) {
-          var hash = (0, _utils.hashString)(action.payload);
-          var request = {
-            ql: action.payload,
-            hash: hash
-          };
-          store.dispatch(actions.queryStarted({ request: request }));
-          (0, _graphql.graphql)(schema, action.payload, undefined, {
-            store: store,
-            dependencies: context
-          }).then(function (result) {
-            if (result.errors === undefined) {
-              store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data), {
-                request: request,
-                response: {
-                  raw: result.data
-                }
-              }));
-            } else {
-              console.error("GraphQL query", action.payload, "has failed.\n", "errors:", result.errors);
-              store.dispatch(actions.queryFailed({ request: request }, result.errors));
-            }
-          });
+        if ((action.type === "GRAPHQL_FETCH" || action.type === "GRAPHQL_MUTATION") && action.graphql) {
+          if (action.type === "GRAPHQL_FETCH") {
+            var query = action.payload instanceof _Query2.default ? action.payload.queryQL : action.payload;
+            var hash = (0, _utils.hashString)(query);
+            var request = {
+              ql: query,
+              hash: hash
+            };
+
+            store.dispatch(actions.queryStarted({ request: request }));
+            var variableValues = action.payload instanceof _Query2.default ? action.payload.variables : {};
+            var operationName = action.payload instanceof _Query2.default ? action.payload.operationName : undefined;
+            (0, _graphql.graphql)(schema, query, rootValue, {
+              store: store,
+              dependencies: context
+            }, variableValues, operationName).then(function (result) {
+              if (result.errors === undefined && result.data) {
+                store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data), {
+                  request: request,
+                  response: {
+                    raw: result.data
+                  }
+                }));
+              } else {
+                console.error("GraphQL query", query, "has failed.\n", "errors:", result.errors);
+                store.dispatch(actions.queryFailed({ request: request }, result.errors));
+              }
+            });
+          } else {
+            var mutation = action.payload.mutation;
+            var _hash = action.payload.queryID;
+            var _request = {
+              ql: mutation.mutationQL,
+              hash: _hash
+            };
+            store.dispatch(actions.queryStarted({ request: _request }));
+            (0, _graphql.graphql)(schema, mutation.mutationQL, rootValue, {
+              store: store,
+              dependencies: context
+            }, mutation.variables, mutation.operationName).then(function (result) {
+              if (result.errors === undefined && result.data) {
+                store.dispatch(actions.packageData((0, _graphqlTypesConverters.getDataFromResponse)(normalizrModel.converters, result.data), {
+                  request: _request,
+                  response: {
+                    raw: result.data
+                  }
+                }));
+                mutation.onCompleted();
+              } else {
+                console.error("GraphQL mutation", mutation.mutationQL, "has failed.\n", "errors:", result.errors);
+                store.dispatch(actions.queryFailed({ request: _request }, result.errors));
+                mutation.onError();
+              }
+            });
+          }
         } else {
           return next(action);
         }
@@ -834,14 +978,81 @@ exports.default = function (schema, actions, normalizrModel, context) {
   };
 };
 
-var _utils = __webpack_require__(5);
+var _utils = __webpack_require__(6);
 
 var _graphql = __webpack_require__(1);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
+var _Mutation = __webpack_require__(4);
+
+var _Mutation2 = _interopRequireDefault(_Mutation);
+
+var _Query = __webpack_require__(10);
+
+var _Query2 = _interopRequireDefault(_Query);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /***/ }),
-/* 9 */
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Query = function () {
+  function Query() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        queryQL = _ref.queryQL,
+        _ref$variables = _ref.variables,
+        variables = _ref$variables === undefined ? {} : _ref$variables,
+        _ref$onError = _ref.onError,
+        onError = _ref$onError === undefined ? function () {} : _ref$onError,
+        _ref$onCompleted = _ref.onCompleted,
+        onCompleted = _ref$onCompleted === undefined ? function () {} : _ref$onCompleted,
+        operationName = _ref.operationName;
+
+    _classCallCheck(this, Query);
+
+    if (queryQL == null) {
+      throw new Error("queryQL has to be defined in the params of new Query: new Query({queryQL: `query ...`})");
+    }
+    this.queryQL = queryQL;
+    this.variables = variables;
+    this.onError = onError;
+    this.onCompleted = onCompleted;
+    this.operationName = operationName;
+  }
+
+  _createClass(Query, [{
+    key: "setOperationName",
+    value: function setOperationName(name) {
+      return new Query({
+        queryQL: this.queryQL,
+        variables: this.variables,
+        onError: this.onError,
+        onCompleted: this.onCompleted,
+        operationName: name
+      });
+    }
+  }]);
+
+  return Query;
+}();
+
+exports.default = Query;
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -853,8 +1064,39 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = configureActions;
 
+var _Mutation = __webpack_require__(4);
+
+var _Mutation2 = _interopRequireDefault(_Mutation);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function configureActions() {
   return {
+    mutateData: function mutateData(mutation, queryID) {
+      return {
+        type: "GRAPHQL_MUTATION",
+        graphql: true,
+        payload: {
+          mutation: mutation,
+          queryID: queryID
+        }
+      };
+    },
+    fetchData: function fetchData(needs) {
+      return {
+        type: "GRAPHQL_FETCH",
+        graphql: true,
+        payload: needs
+      };
+    },
+    bustQueryCache: function bustQueryCache(queryID) {
+      return {
+        type: "QUERY_CACHE_BUSTED",
+        payload: {
+          queryID: queryID
+        }
+      };
+    },
     packageData: function packageData(data, query) {
       return {
         type: "DATA_RECEIVED",
@@ -891,7 +1133,7 @@ function configureActions() {
 }
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -908,7 +1150,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 exports.default = configureConnecter;
 
-var _react = __webpack_require__(11);
+var _react = __webpack_require__(13);
 
 var _react2 = _interopRequireDefault(_react);
 
@@ -918,9 +1160,13 @@ var _immutable = __webpack_require__(2);
 
 var _graphqlTypesConverters = __webpack_require__(0);
 
-var _utils = __webpack_require__(5);
+var _utils = __webpack_require__(6);
 
 var _reducer = __webpack_require__(3);
+
+var _Mutation = __webpack_require__(4);
+
+var _Mutation2 = _interopRequireDefault(_Mutation);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -938,7 +1184,8 @@ function configureConnecter() {
       selectorSchema = _ref.selectorSchema,
       recordTypes = _ref.recordTypes,
       _ref$reducerName = _ref.reducerName,
-      reducerName = _ref$reducerName === undefined ? "data" : _ref$reducerName;
+      reducerName = _ref$reducerName === undefined ? "data" : _ref$reducerName,
+      actions = _ref.actions;
 
   if (typesSchema === undefined) {
     throw new Error("You have to define a type schema, type schema is currently " + typesSchema);
@@ -946,7 +1193,127 @@ function configureConnecter() {
   if (selectorSchema === undefined) {
     throw new Error("You have to define a selector schema, selector schema is currently " + selectorSchema);
   }
-  return function GraphQLConnecter(mapPropsToNeeds) {
+
+  function DataHandlers(_ref2) {
+    var mapMutationsToProps = _ref2.mapMutationsToProps;
+
+    return function DataHandlersHOC(Comp) {
+      return function (_React$Component) {
+        _inherits(DataHandlersContainer, _React$Component);
+
+        function DataHandlersContainer(props) {
+          _classCallCheck(this, DataHandlersContainer);
+
+          var _this = _possibleConstructorReturn(this, (DataHandlersContainer.__proto__ || Object.getPrototypeOf(DataHandlersContainer)).call(this, props));
+
+          _this.id = props.__uniqueID || (0, _utils.generateUUID)();
+          _this.bustQueryCache = _this.bustQueryCache.bind(_this);
+          return _this;
+        }
+
+        _createClass(DataHandlersContainer, [{
+          key: "getReducer",
+          value: function getReducer(props) {
+            return props[reducerName];
+          }
+        }, {
+          key: "getLinkedQueries",
+          value: function getLinkedQueries(props) {
+            var _this2 = this;
+
+            var reducer = this.getReducer(props);
+            var queries = reducer.queries;
+            var mutationsProps = mapMutationsToProps(props);
+            var names = Object.keys(mutationsProps);
+            var linkedQueries = names.map(function (name) {
+              return {
+                name: name,
+                query: queries.get((0, _utils.hashMutationQuery)(name, _this2.id).toString())
+              };
+            });
+            return linkedQueries;
+          }
+        }, {
+          key: "getLinkedQueryStates",
+          value: function getLinkedQueryStates(props) {
+            var linkedQueries = this.getLinkedQueries(props).reduce(function (red, infos) {
+              var propName = infos.name + "QueryProgress";
+              return _extends({}, red, _defineProperty({}, propName, infos.query ? infos.query.progress : _reducer.QUERY_PROGRESS_NOT_STARTED));
+            }, {});
+            return linkedQueries;
+          }
+        }, {
+          key: "componentWillUnmount",
+          value: function componentWillUnmount() {
+            var _this3 = this;
+
+            this.getLinkedQueries(this.props).forEach(function (info) {
+              _this3.bustQueryCache(info.name);
+            });
+          }
+        }, {
+          key: "bustQueryCache",
+          value: function bustQueryCache(handlerName) {
+            this.props.dispatch(actions.bustQueryCache((0, _utils.hashMutationQuery)(handlerName, this.id)));
+          }
+        }, {
+          key: "render",
+          value: function render() {
+            var _this4 = this;
+
+            var reducer = this.getReducer(this.props);
+            if (!reducer) throw new Error("DataHandlers must get the cache reducer as a props named '" + reducerName + "'");
+
+            if (!this.props.dispatch) throw new Error("DataHandlers must get the dispatch function as props");
+
+            var mutationsMap = mapMutationsToProps(this.props);
+            var handlers = Object.keys(mutationsMap).reduce(function (red, key) {
+              if (typeof mutationsMap[key] !== "function") {
+                throw new Error("You must pass a function as handler of mapMutationsToProps, handler " + key + " isn't a function");
+              }
+              return _extends({}, red, _defineProperty({}, key, function () {
+                var mutation = mutationsMap[key].apply(mutationsMap, arguments);
+                if (mutation instanceof _Mutation2.default) {
+                  var action = actions.mutateData(mutation, (0, _utils.hashMutationQuery)(key, _this4.id));
+                  _this4.props.dispatch(action);
+                } else if (mutation) {
+                  console.error("You have to return a Mutation from the handler defined in mapMutationsToProps,", key, "handler doesn't return a Mutation.");
+                } else {
+                  return;
+                }
+              }));
+            }, {});
+            var queries = this.getLinkedQueryStates(this.props);
+            return _react2.default.createElement(Comp, _extends({}, this.props, handlers, queries, {
+              bustQueryCache: this.bustQueryCache
+            }));
+          }
+        }]);
+
+        return DataHandlersContainer;
+      }(_react2.default.Component);
+    };
+  }
+
+  function DataFetcher(_ref3) {
+    var mapPropsToNeeds = _ref3.mapPropsToNeeds,
+        _ref3$mapCacheToProps = _ref3.mapCacheToProps,
+        mapCacheToProps = _ref3$mapCacheToProps === undefined ? function () {
+      return {};
+    } : _ref3$mapCacheToProps,
+        _ref3$shouldRefetch = _ref3.shouldRefetch,
+        shouldRefetch = _ref3$shouldRefetch === undefined ? function () {
+      return false;
+    } : _ref3$shouldRefetch,
+        _ref3$queryProgressPr = _ref3.queryProgressPropName,
+        queryProgressPropName = _ref3$queryProgressPr === undefined ? "queryProgress" : _ref3$queryProgressPr;
+
+    return GraphQLConnecter(mapPropsToNeeds, mapCacheToProps, shouldRefetch, {
+      queryProgressPropName: queryProgressPropName
+    });
+  }
+
+  function GraphQLConnecter(mapPropsToNeeds) {
     var mapCacheToProps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
       return {};
     };
@@ -954,23 +1321,23 @@ function configureConnecter() {
       return false;
     };
 
-    var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
-        _ref2$queryProgressPr = _ref2.queryProgressPropName,
-        queryProgressPropName = _ref2$queryProgressPr === undefined ? "queryProgress" : _ref2$queryProgressPr;
+    var _ref4 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
+        _ref4$queryProgressPr = _ref4.queryProgressPropName,
+        queryProgressPropName = _ref4$queryProgressPr === undefined ? "queryProgress" : _ref4$queryProgressPr;
 
     return function (WrappedComponent) {
-      return function (_React$Component) {
-        _inherits(GraphQLContainer, _React$Component);
+      return function (_React$Component2) {
+        _inherits(GraphQLContainer, _React$Component2);
 
         function GraphQLContainer(props) {
           _classCallCheck(this, GraphQLContainer);
 
-          var _this = _possibleConstructorReturn(this, (GraphQLContainer.__proto__ || Object.getPrototypeOf(GraphQLContainer)).call(this, props));
+          var _this5 = _possibleConstructorReturn(this, (GraphQLContainer.__proto__ || Object.getPrototypeOf(GraphQLContainer)).call(this, props));
 
-          _this.state = {
+          _this5.state = {
             selectedData: {}
           };
-          return _this;
+          return _this5;
         }
 
         _createClass(GraphQLContainer, [{
@@ -992,7 +1359,7 @@ function configureConnecter() {
             var currentNeeds = mapPropsToNeeds(props);
             var nextNeeds = mapPropsToNeeds(nextProps);
             if (nextNeeds !== currentNeeds) return true;
-            var hash = currentNeeds != null ? (0, _utils.hashString)(currentNeeds) : null;
+            var hash = currentNeeds != null ? (0, _utils.hashString)(currentNeeds).toString() : null;
             if (hash != null) {
               var nextQuery = nextReducer.getIn(["queries", hash]);
               var currentQuery = currentReducer.getIn(["queries", hash]);
@@ -1033,7 +1400,7 @@ function configureConnecter() {
         }, {
           key: "selectData",
           value: function selectData(props) {
-            var _this2 = this;
+            var _this6 = this;
 
             var query = mapPropsToNeeds(props);
             var reducer = this.getReducer(props);
@@ -1041,7 +1408,7 @@ function configureConnecter() {
               this.warnAgainstEmptyQuery();
               this.resetSelection();
             } else if (query != null) {
-              var hash = (0, _utils.hashString)(query);
+              var hash = (0, _utils.hashString)(query).toString();
               if (props.__debug) {
                 console.log("SELECTING data for hash", hash, " -- date:", Date.now());
               }
@@ -1056,14 +1423,14 @@ function configureConnecter() {
                     console.log("SELECTED data", result.data, "for hash", hash, "with reducer", reducer, " -- date:", Date.now());
                   }
                   var convertedData = (0, _graphqlTypesConverters.convertsGraphQLResultToRecords)(result.data, typesSchema, recordTypes);
-                  var reducerChanged = _this2.getReducer(props) !== reducer;
+                  var reducerChanged = _this6.getReducer(props) !== reducer;
                   if (props.__debug) {
-                    console.log("CONVERTED data", result.data, "into", convertedData, "for hash", "with reducer", reducer, reducerChanged ? "but reducer has changed to" : "", reducerChanged ? _this2.getReducer(props) : "", reducerChanged ? "relaunching selection" : "");
+                    console.log("CONVERTED data", result.data, "into", convertedData, "for hash", "with reducer", reducer, reducerChanged ? "but reducer has changed to" : "", reducerChanged ? _this6.getReducer(props) : "", reducerChanged ? "relaunching selection" : "");
                   }
                   if (reducerChanged) {
-                    _this2.selectData(props);
+                    _this6.selectData(props);
                   } else {
-                    _this2.setState(function (state) {
+                    _this6.setState(function (state) {
                       return { selectedData: convertedData };
                     });
                   }
@@ -1087,26 +1454,22 @@ function configureConnecter() {
             if (needs === "{}" || needs === "{ }") {
               this.warnAgainstEmptyQuery();
             } else if (needs != null) {
-              this.props.dispatch({
-                type: "GRAPHQL_FETCH",
-                graphql: true,
-                payload: needs
-              });
+              this.props.dispatch(actions.fetchData(needs));
             }
           }
         }, {
           key: "render",
           value: function render() {
-            var _this3 = this;
+            var _this7 = this;
 
             var reducer = this.getReducer(this.props);
             if (!reducer) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
             if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
             var needs = mapPropsToNeeds(this.props);
-            var queryProgress = needs !== null ? reducer.getIn(["queries", (0, _utils.hashString)(needs), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
+            var queryProgress = needs !== null ? reducer.getIn(["queries", (0, _utils.hashString)(needs).toString(), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
             return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, queryProgress), {
               refetch: function refetch() {
-                return _this3.getNeeds();
+                return _this7.getNeeds();
               }
             }));
           }
@@ -1115,17 +1478,18 @@ function configureConnecter() {
         return GraphQLContainer;
       }(_react2.default.Component);
     };
-  };
+  }
+  return { GraphQLConnecter: GraphQLConnecter, DataHandlers: DataHandlers, DataFetcher: DataFetcher };
 }
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_11__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_13__;
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
