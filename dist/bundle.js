@@ -1335,7 +1335,8 @@ function configureConnecter() {
           var _this5 = _possibleConstructorReturn(this, (GraphQLContainer.__proto__ || Object.getPrototypeOf(GraphQLContainer)).call(this, props));
 
           _this5.state = {
-            selectedData: {}
+            selectedData: {},
+            queryProgress: _reducer.QUERY_PROGRESS_NOT_STARTED
           };
           return _this5;
         }
@@ -1430,8 +1431,12 @@ function configureConnecter() {
                   if (reducerChanged) {
                     _this6.selectData(props);
                   } else {
+                    var queryProgress = reducer.getIn(["queries", hash, "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED);
                     _this6.setState(function (state) {
-                      return { selectedData: convertedData };
+                      return {
+                        selectedData: convertedData,
+                        queryProgress: queryProgress
+                      };
                     });
                   }
                 }
@@ -1444,7 +1449,10 @@ function configureConnecter() {
           key: "resetSelection",
           value: function resetSelection() {
             this.setState(function (state) {
-              return { selectedData: {} };
+              return {
+                selectedData: {},
+                queryProgress: _reducer.QUERY_PROGRESS_NOT_STARTED
+              };
             });
           }
         }, {
@@ -1465,9 +1473,7 @@ function configureConnecter() {
             var reducer = this.getReducer(this.props);
             if (!reducer) throw new Error("GraphQLConnecter must get the cache reducer as a props named '" + reducerName + "'");
             if (!this.props.dispatch) throw new Error("GraphQLConnecter must get the dispatch function as props");
-            var needs = mapPropsToNeeds(this.props);
-            var queryProgress = needs !== null ? reducer.getIn(["queries", (0, _utils.hashString)(needs).toString(), "progress"], _reducer.QUERY_PROGRESS_NOT_STARTED) : _reducer.QUERY_PROGRESS_NOT_STARTED;
-            return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, queryProgress), {
+            return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state.selectedData, mapCacheToProps(this.props.data, this.props, this.state.selectedData), _defineProperty({}, queryProgressPropName, this.state.queryProgress), {
               refetch: function refetch() {
                 return _this7.getNeeds();
               }
