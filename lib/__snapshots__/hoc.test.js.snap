@@ -1,0 +1,125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HOC DataHandlers busts cache on unmount 1`] = `
+Array [
+  Array [
+    Object {
+      "payload": Object {
+        "queryID": 1385894182,
+      },
+      "type": "QUERY_CACHE_BUSTED",
+    },
+  ],
+  Array [
+    Object {
+      "payload": Object {
+        "queryID": 436150438,
+      },
+      "type": "QUERY_CACHE_BUSTED",
+    },
+  ],
+]
+`;
+
+exports[`HOC DataHandlers dispatches an action when bustQueryCache is called 1`] = `
+Array [
+  Array [
+    Object {
+      "payload": Object {
+        "queryID": 1464482893,
+      },
+      "type": "QUERY_CACHE_BUSTED",
+    },
+  ],
+]
+`;
+
+exports[`HOC DataHandlers dispatches mutations when a handler is called 1`] = `
+Array [
+  Array [
+    Object {
+      "graphql": true,
+      "payload": Object {
+        "mutation": Mutation {
+          "mutationQL": "mutation {}",
+          "onCompleted": [Function],
+          "onError": [Function],
+          "operationName": undefined,
+          "variables": Object {},
+        },
+        "queryID": 1385894182,
+      },
+      "type": "GRAPHQL_MUTATION",
+    },
+  ],
+]
+`;
+
+exports[`HOC DataHandlers dispatches mutations when a handler is called 2`] = `
+Array [
+  Array [
+    "a",
+    "b",
+  ],
+]
+`;
+
+exports[`HOC DataHandlers passes the query progress as props 1`] = `"not started"`;
+
+exports[`HOC DataHandlers passes the query progress as props 2`] = `"pending"`;
+
+exports[`HOC DataHandlers throws if a handler isn't a function 1`] = `"You must pass a function as handler of mapMutationsToProps, handler onClick isn't a function"`;
+
+exports[`HOC DataHandlers throws if dispatch is not passed as props 1`] = `"DataHandlers must get the dispatch function as props"`;
+
+exports[`HOC DataHandlers throws if reducer is not passed as props 1`] = `"DataHandlers must get the cache reducer as a props named 'data'"`;
+
+exports[`HOC GraphQLConnecter selects data in the cache 1`] = `
+Object {
+  "data": Object {
+    "entities": Object {
+      "User": Object {
+        "1": Object {
+          "friends": Array [
+            2,
+            3,
+          ],
+          "id": 1,
+          "name": "Alan",
+        },
+        "2": Object {
+          "friends": Array [
+            1,
+          ],
+          "id": 2,
+          "name": "Antoine",
+        },
+        "3": Object {
+          "friends": null,
+          "id": 3,
+          "name": "Sophie",
+        },
+      },
+    },
+    "queries": Object {
+      "1002205036": Object {
+        "progress": "not started",
+        "results": Object {
+          "byEntity": Object {},
+          "byQuery": Object {
+            "users": Array [
+              1,
+              2,
+            ],
+          },
+        },
+      },
+    },
+  },
+  "dispatch": [Function],
+  "queryProgress": "not started",
+  "refetch": [Function],
+  "users": Immutable.List [
+],
+}
+`;
