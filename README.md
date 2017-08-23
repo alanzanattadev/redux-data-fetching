@@ -18,7 +18,7 @@ Install module
 npm install --save alanzanattadev/redux-data-fetching
 ```
 
-## Use
+## Use
 
 ### Configuration
 
