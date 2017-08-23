@@ -140,6 +140,11 @@ DataFetcher can receive:
 
 You have to send the reducer and dispatch as props to DataFetcher.
 
+- [ ] variables
+- [ ] aliases
+- [ ] fragments
+- [ ] directives (Haven't tried, maybe it works).
+
 #### DataHandlers
 
 DataHandlers is the HOC responsible of giving you the capability of updating data through mutations. It lets you define handlers that will return mutations, allowing you to modify data on a form submission or on a button click. Data returned by the mutation is automatically merged with the data in your store.
@@ -227,6 +232,11 @@ Mutation API: new Mutation({
 }).
 
 You have to send the reducer and dispatch as props to DataFetcher.
+
+- [x] variables
+- [ ] aliases
+- [x] fragments
+- [ ] directives (Haven't tried, maybe it works).
 
 #### Actions
 
