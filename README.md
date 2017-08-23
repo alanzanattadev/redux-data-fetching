@@ -72,7 +72,7 @@ Everything is based on your GraphQL types, so be careful on naming.
 
 #### DataFetcher
 
-DataFetcher is the HOC (Higher Order Component) used for fetching data as its name indicates. It is responsible for getting what you asked, and sending it to you as props. To provide a good user experience, you probably want to display some spinners / loaders while data is loading, and this HOC will send you what you need also for that.
+DataFetcher is the HOC (Higher Order Component) used for fetching data as its name indicates. It is responsible for getting what you asked, and sending it to you as props. To provide a good user experience, you probably want to display some spinners / loaders while data is loading, and this HOC will send you what you need also for that. If you need to force a refetch, the HOC sends you a prop "refetch" which is a function that you can call without arguments.
 
 This is an example of usage:
 
@@ -87,7 +87,7 @@ This is an example of usage:
   import { compose } from "recompose";
   import { DataFetcher } from "../utils";
   
-  const UserCard = ({user, queryProgress}) => {
+  const UserCard = ({user, queryProgress, refetch}) => {
     if (queryProgress === QUERY_PROGRESS_PENDING) {
       return <Spinner/>
     } else if (queryProgress === QUERY_PROGRESS_FAILED) {
@@ -98,6 +98,7 @@ This is an example of usage:
       return (
         <div>
           User {user.id} has name {user.name} and his first friend is {user.friends[0].name}
+          <button onClick={refetch}/>
         </div>
       );
     } else {
