@@ -1,4 +1,4 @@
-# redux-data-fetching
+# redux-data-fetching
 
 If you're looking for an alternative to Relay based on Redux you're at the good place. Data management is hard and painful, this library is a complete infrastructure designed to handle entities storage, data merging, auto fetching and GraphQL based selection of data. It also supports mutations and query progress.
 
