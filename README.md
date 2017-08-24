@@ -8,7 +8,7 @@ My goal is to provide you a flexible way to store data by organizing them by ent
 
 ## How it works
 
-You have a set of Higher Order Components, to either fetch or mutate data. This library takes your GraphQL Schema and converts types to others libraries schemas (ImmutableJS Records, Normalizr Schema, etc...). Then you wrap your component with the DataFetcher and ask in GraphQL what you need. It automatically fetches data, normalizes it, converts it to Records and selects it in the cache. It sends you the query progress as prop and when data is fetched, what you asked, in the exact shape you asked. To update data you'll have to associate Mutation objects to handlers, will be explained in this documentation.
+You have a set of Higher Order Components, to either fetch or mutate data. This library takes your GraphQL Schema and converts types to others libraries schemas (ImmutableJS Records, Normalizr Schema, etc...). Then you wrap your component with the DataFetcher and ask in GraphQL what you need. It automatically fetches data, normalizes it, converts it to Records or Lists and selects it in the cache. It sends you the query progress as prop and when data is fetched, what you asked, in the exact shape you asked. To update data you'll have to associate Mutation objects to handlers, will be explained in this documentation.
 
 ## Install
 
