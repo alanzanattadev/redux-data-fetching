@@ -1,0 +1,6 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TestUtils createTestLab tests a correct DataFetcher correctly 1`] = `
+Immutable.List [
+]
+`;

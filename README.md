@@ -146,6 +146,48 @@ You have to send the reducer and dispatch as props to DataFetcher.
 - [ ] fragments
 - [ ] directives (Haven't tried, maybe it works).
 
+#### How to Unit Test DataFetcher
+
+The test lab will automatically test your query against the real graphql engine. You have access to some handlers to customize your test as you want, but the simplest way of testing is by sending the "done" parameter to onSuccess to verify if the query can succeed.
+
+createTestLab has the signature: (HOC) => Component.
+It can take as props:
+  - onMount: (props) => void
+  - onSuccess: (data) => void
+  - onError: (errors) => void
+  - onResolve: (graphQLPromise) => void
+  - watchedProps: string | Array<string>
+  - onPropChange: (props, prevProps) => void
+  
+You can leverage those handlers as you want.
+
+This example takes Jest as test engine.
+
+```javascript
+  import React from "react";
+  import { createTestLab } from "redux-data-fetching";
+  import { mount } from "enzyme";
+  import { ConfiguredDataFetcher } from "../myfile";
+  import { schema } from "../myschema";
+  
+  describe("How to unit test DataFetcher", () => {
+    it("tests that query is valid", (done) => {
+      const Lab = createTestLab(ConfiguredDataFetcher);
+      
+      mount(<Lab onSuccess={done}/>)
+    });
+    
+    it("tests that prop user is received", (done) => {
+      const Lab = createTestLab(ConfiguredDataFetcher);
+      
+      mount(<Lab watchedProps={"user"} onPropChange={(props) => {
+        expect(props.user).toMatchSnapshot();
+        done();
+      }}/>)      
+    });
+  })
+```
+
 #### DataHandlers
 
 DataHandlers is the HOC responsible of giving you the capability of updating data through mutations. It lets you define handlers that will return mutations, allowing you to modify data on a form submission or on a button click. Data returned by the mutation is automatically merged with the data in your store.
@@ -238,6 +280,46 @@ You have to send the reducer and dispatch as props to DataFetcher.
 - [ ] aliases
 - [x] fragments
 - [ ] directives (Haven't tried, maybe it works).
+
+#### How to Unit Test DataHandlers
+
+The test lab will automatically test your mutation agains the real graphql engine. You have access to some handlers to customize your test as you want, but the simplest way of testing is by sending the "done" parameter to onSuccess to verify if the query can succeed.
+
+createTestLab has the signature: (HOC) => Component.
+It can take as props:
+  - onMount: (props) => void
+  - onSuccess: (data) => void
+  - onError: (errors) => void
+  - onResolve: (graphQLPromise) => void
+  - watchedProps: string | Array<string>
+  - onPropChange: (props, prevProps) => void
+  
+You can leverage those handlers as you want.
+
+This example takes Jest as test engine.
+
+```javascript
+  import React from "react";
+  import { createTestLab } from "redux-data-fetching";
+  import { mount } from "enzyme";
+  import { ConfiguredDataHandlers } from "../myfile";
+  import { schema } from "../myschema";
+  
+  describe("How to unit test DataFetcher", () => {
+    it("tests that Mutation is valid", (done) => {
+      const Lab = createTestLab(ConfiguredDataHandlers);
+      
+      mount(
+        <Lab
+          onMount={(props) => props.onSubmit({name: "Alan"})} onSuccess={(dataBackFromMutation) => {
+            expect(dataBackFromMutation).toMatchSnapshot();
+            done()
+          }}
+        />
+      );
+    });    
+  })
+```
 
 #### Actions
 
