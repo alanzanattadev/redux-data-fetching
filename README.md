@@ -207,7 +207,7 @@ import {
 import { compose } from "recompose";
 import { DataHandlers } from "../utils";
 
-const Form = ({onSubmit, onSubmitQueryProgress}) => {
+const Form = ({onSubmit, onSubmitQueryProgress, onSubmitQueryResponse}) => {
   if (queryProgress === QUERY_PROGRESS_PENDING) {
     return <Spinner/>
   } else if (queryProgress === QUERY_PROGRESS_FAILED) {
@@ -223,6 +223,7 @@ const Form = ({onSubmit, onSubmitQueryProgress}) => {
     return (
       <div>
         Data modified !
+        this is the new data {onSubmitQueryResponse}
       </div>
     );
   } else {

@@ -64,6 +64,12 @@ Array [
 ]
 `;
 
+exports[`HOC DataHandlers passes the query progress and response as props 1`] = `"not started"`;
+
+exports[`HOC DataHandlers passes the query progress and response as props 2`] = `"pending"`;
+
+exports[`HOC DataHandlers passes the query progress and response as props 3`] = `undefined`;
+
 exports[`HOC DataHandlers passes the query progress as props 1`] = `"not started"`;
 
 exports[`HOC DataHandlers passes the query progress as props 2`] = `"pending"`;
