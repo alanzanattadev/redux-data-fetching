@@ -390,7 +390,11 @@ var QUERY_PROGRESS_PENDING = exports.QUERY_PROGRESS_PENDING = "pending";
 var QUERY_PROGRESS_SUCCEED = exports.QUERY_PROGRESS_SUCCEED = "succeed";
 var QUERY_PROGRESS_FAILED = exports.QUERY_PROGRESS_FAILED = "failed";
 
-var ResultsRecord = exports.ResultsRecord = (0, _immutable.Record)({ byQuery: (0, _immutable.Map)(), byEntity: (0, _immutable.Map)() });
+var ResultsRecord = exports.ResultsRecord = (0, _immutable.Record)({
+  raw: null,
+  byQuery: (0, _immutable.Map)(),
+  byEntity: (0, _immutable.Map)()
+});
 var QueryRecord = exports.QueryRecord = (0, _immutable.Record)({
   results: new ResultsRecord(),
   progress: QUERY_PROGRESS_NOT_STARTED
@@ -432,6 +436,7 @@ function configureReducer(normalizrTypes, recordsTypes, graphQLSchema) {
         }).update("queries", function (queries) {
           return action.payload.query ? queries.set(action.payload.query.request.hash.toString(), new QueryRecord({
             results: new ResultsRecord({
+              raw: action.payload.query.response.raw,
               byQuery: (0, _graphqlTypesConverters.convertsGraphQLResultToRootEntitiesIDs)(action.payload.query.response.raw)
             }),
             progress: QUERY_PROGRESS_SUCCEED
@@ -3027,11 +3032,14 @@ function configureConnecter() {
             return linkedQueries;
           }
         }, {
-          key: "getLinkedQueryStates",
-          value: function getLinkedQueryStates(props) {
+          key: "getLinkedQueryProps",
+          value: function getLinkedQueryProps(props) {
             var linkedQueries = this.getLinkedQueries(props).reduce(function (red, infos) {
-              var propName = infos.name + "QueryProgress";
-              return _extends({}, red, _defineProperty({}, propName, infos.query ? infos.query.progress : _reducer.QUERY_PROGRESS_NOT_STARTED));
+              var _extends2;
+
+              var queryProgressPropName = infos.name + "QueryProgress";
+              var queryResponsePropName = infos.name + "QueryResponse";
+              return _extends({}, red, (_extends2 = {}, _defineProperty(_extends2, queryProgressPropName, infos.query ? infos.query.progress : _reducer.QUERY_PROGRESS_NOT_STARTED), _defineProperty(_extends2, queryResponsePropName, infos.query ? infos.query.results.raw : null), _extends2));
             }, {});
             return linkedQueries;
           }
@@ -3076,7 +3084,7 @@ function configureConnecter() {
                 }
               }));
             }, {});
-            var queries = this.getLinkedQueryStates(this.props);
+            var queries = this.getLinkedQueryProps(this.props);
             return _react2.default.createElement(Comp, _extends({}, this.props, handlers, queries, {
               bustQueryCache: this.bustQueryCache
             }));
