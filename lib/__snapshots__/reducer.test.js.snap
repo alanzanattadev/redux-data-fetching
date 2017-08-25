@@ -61,6 +61,7 @@ Object {
       "results": Object {
         "byEntity": Object {},
         "byQuery": Object {},
+        "raw": null,
       },
     },
   },
@@ -76,6 +77,7 @@ Object {
       "results": Object {
         "byEntity": Object {},
         "byQuery": Object {},
+        "raw": null,
       },
     },
   },
@@ -151,6 +153,32 @@ Object {
             2,
           ],
           "users": "2",
+        },
+        "raw": Object {
+          "skills": Array [
+            Object {
+              "id": 1,
+              "power": 5,
+            },
+            Object {
+              "id": 2,
+              "power": 2,
+              "target": Object {
+                "id": 2,
+                "name": "Antoine",
+              },
+            },
+          ],
+          "users": Object {
+            "friends": Array [
+              Object {
+                "age": 28,
+                "id": 3,
+                "name": "Joffrey",
+              },
+            ],
+            "id": "2",
+          },
         },
       },
     },
