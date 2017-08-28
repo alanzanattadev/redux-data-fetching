@@ -39,11 +39,6 @@ module.exports = {
       commonjs: "graphql",
       amd: "graphql",
     },
-    normalizr: {
-      commonjs2: "normalizr",
-      commonjs: "normalizr",
-      amd: "normalizr",
-    },
     immutable: {
       commonjs2: "immutable",
       commonjs: "immutable",
