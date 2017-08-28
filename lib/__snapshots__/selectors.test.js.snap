@@ -143,6 +143,81 @@ Object {
 }
 `;
 
+exports[`Selectors convertsTypesSchemaToSelectorSchema resolves to result of the needs with fragments 1`] = `
+Object {
+  "females": Array [
+    Object {
+      "friends": Array [
+        Object {
+          "friends": Array [
+            Object {
+              "id": 2,
+              "name": "Sophie",
+            },
+            Object {
+              "id": 3,
+              "name": "Antoine",
+            },
+          ],
+          "id": 1,
+          "name": "Alan",
+        },
+      ],
+      "id": 2,
+      "name": "Sophie",
+    },
+  ],
+  "users": Array [
+    Object {
+      "friends": Array [
+        Object {
+          "friends": Array [
+            Object {
+              "id": 1,
+              "name": "Alan",
+            },
+          ],
+          "id": 2,
+          "name": "Sophie",
+        },
+        Object {
+          "friends": Array [
+            Object {
+              "id": 1,
+              "name": "Alan",
+            },
+          ],
+          "id": 3,
+          "name": "Antoine",
+        },
+      ],
+      "id": 1,
+      "name": "Alan",
+    },
+    Object {
+      "friends": Array [
+        Object {
+          "friends": Array [
+            Object {
+              "id": 2,
+              "name": "Sophie",
+            },
+            Object {
+              "id": 3,
+              "name": "Antoine",
+            },
+          ],
+          "id": 1,
+          "name": "Alan",
+        },
+      ],
+      "id": 3,
+      "name": "Antoine",
+    },
+  ],
+}
+`;
+
 exports[`Selectors convertsTypesSchemaToSelectorSchema throws when db is not passed in contextValue 1`] = `
 Array [
   [GraphQLError: You have to pass database (entities and results) as db and graphql query as queryHash in contextValue],
