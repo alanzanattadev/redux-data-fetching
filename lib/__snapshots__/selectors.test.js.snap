@@ -1,5 +1,158 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Selectors convertsQueryToSelectorQuery converts name of fragment type in selector name 1`] = `
+Object {
+  "definitions": Array [
+    Object {
+      "directives": Array [],
+      "kind": "OperationDefinition",
+      "loc": Object {
+        "end": 101,
+        "start": 11,
+      },
+      "name": null,
+      "operation": "query",
+      "selectionSet": Object {
+        "kind": "SelectionSet",
+        "loc": Object {
+          "end": 101,
+          "start": 11,
+        },
+        "selections": Array [
+          Object {
+            "alias": null,
+            "arguments": Array [],
+            "directives": Array [],
+            "kind": "Field",
+            "loc": Object {
+              "end": 89,
+              "start": 25,
+            },
+            "name": Object {
+              "kind": "Name",
+              "loc": Object {
+                "end": 30,
+                "start": 25,
+              },
+              "value": "users",
+            },
+            "selectionSet": Object {
+              "kind": "SelectionSet",
+              "loc": Object {
+                "end": 89,
+                "start": 31,
+              },
+              "selections": Array [
+                Object {
+                  "directives": Array [],
+                  "kind": "FragmentSpread",
+                  "loc": Object {
+                    "end": 55,
+                    "start": 47,
+                  },
+                  "name": Object {
+                    "kind": "Name",
+                    "loc": Object {
+                      "end": 55,
+                      "start": 50,
+                    },
+                    "value": "infos",
+                  },
+                },
+                Object {
+                  "alias": null,
+                  "arguments": Array [],
+                  "directives": Array [],
+                  "kind": "Field",
+                  "loc": Object {
+                    "end": 75,
+                    "start": 71,
+                  },
+                  "name": Object {
+                    "kind": "Name",
+                    "loc": Object {
+                      "end": 75,
+                      "start": 71,
+                    },
+                    "value": "name",
+                  },
+                  "selectionSet": null,
+                },
+              ],
+            },
+          },
+        ],
+      },
+      "variableDefinitions": null,
+    },
+    Object {
+      "directives": Array [],
+      "kind": "FragmentDefinition",
+      "loc": Object {
+        "end": 164,
+        "start": 113,
+      },
+      "name": Object {
+        "kind": "Name",
+        "loc": Object {
+          "end": 127,
+          "start": 122,
+        },
+        "value": "infos",
+      },
+      "selectionSet": Object {
+        "kind": "SelectionSet",
+        "loc": Object {
+          "end": 164,
+          "start": 136,
+        },
+        "selections": Array [
+          Object {
+            "alias": null,
+            "arguments": Array [],
+            "directives": Array [],
+            "kind": "Field",
+            "loc": Object {
+              "end": 152,
+              "start": 150,
+            },
+            "name": Object {
+              "kind": "Name",
+              "loc": Object {
+                "end": 152,
+                "start": 150,
+              },
+              "value": "id",
+            },
+            "selectionSet": null,
+          },
+        ],
+      },
+      "typeCondition": Object {
+        "kind": "NamedType",
+        "loc": Object {
+          "end": 135,
+          "start": 131,
+        },
+        "name": Object {
+          "kind": "Name",
+          "loc": Object {
+            "end": 135,
+            "start": 131,
+          },
+          "value": "UserSelector",
+        },
+      },
+    },
+  ],
+  "kind": "Document",
+  "loc": Object {
+    "end": 173,
+    "start": 0,
+  },
+}
+`;
+
 exports[`Selectors convertsTypesSchemaToSelectorSchema converts simple schema to selector schema 1`] = `
 GraphQLSchema {
   "_directives": Array [
@@ -138,6 +291,81 @@ Object {
         },
       ],
       "id": 3,
+    },
+  ],
+}
+`;
+
+exports[`Selectors convertsTypesSchemaToSelectorSchema resolves to result of the needs with fragments 1`] = `
+Object {
+  "females": Array [
+    Object {
+      "friends": Array [
+        Object {
+          "friends": Array [
+            Object {
+              "id": 2,
+              "name": "Sophie",
+            },
+            Object {
+              "id": 3,
+              "name": "Antoine",
+            },
+          ],
+          "id": 1,
+          "name": "Alan",
+        },
+      ],
+      "id": 2,
+      "name": "Sophie",
+    },
+  ],
+  "users": Array [
+    Object {
+      "friends": Array [
+        Object {
+          "friends": Array [
+            Object {
+              "id": 1,
+              "name": "Alan",
+            },
+          ],
+          "id": 2,
+          "name": "Sophie",
+        },
+        Object {
+          "friends": Array [
+            Object {
+              "id": 1,
+              "name": "Alan",
+            },
+          ],
+          "id": 3,
+          "name": "Antoine",
+        },
+      ],
+      "id": 1,
+      "name": "Alan",
+    },
+    Object {
+      "friends": Array [
+        Object {
+          "friends": Array [
+            Object {
+              "id": 2,
+              "name": "Sophie",
+            },
+            Object {
+              "id": 3,
+              "name": "Antoine",
+            },
+          ],
+          "id": 1,
+          "name": "Alan",
+        },
+      ],
+      "id": 3,
+      "name": "Antoine",
     },
   ],
 }
