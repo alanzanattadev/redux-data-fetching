@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Utils hashMutationQuery creates a hash 1`] = `653432890`;
+
+exports[`Utils selectedDataHaveChanged throws if a fragment is not defined 1`] = `"Aborting because of unknown fragment invalidFragment"`;

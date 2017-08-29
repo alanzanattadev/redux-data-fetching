@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -569,23 +569,23 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _Entity = __webpack_require__(22);
+var _Entity = __webpack_require__(23);
 
 var _Entity2 = _interopRequireDefault(_Entity);
 
-var _Union = __webpack_require__(23);
+var _Union = __webpack_require__(24);
 
 var _Union2 = _interopRequireDefault(_Union);
 
-var _Values = __webpack_require__(24);
+var _Values = __webpack_require__(25);
 
 var _Values2 = _interopRequireDefault(_Values);
 
-var _Array = __webpack_require__(25);
+var _Array = __webpack_require__(26);
 
 var ArrayUtils = _interopRequireWildcard(_Array);
 
-var _Object = __webpack_require__(26);
+var _Object = __webpack_require__(27);
 
 var ObjectUtils = _interopRequireWildcard(_Object);
 
@@ -819,6 +819,7 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 exports.hashString = hashString;
 exports.hashMutationQuery = hashMutationQuery;
 exports.generateUUID = generateUUID;
+exports.getFragmentDefinitions = getFragmentDefinitions;
 exports.selectedDataHaveChanged = selectedDataHaveChanged;
 
 var _immutable = __webpack_require__(4);
@@ -1032,14 +1033,29 @@ var TypeInfoWithValuesComparator = exports.TypeInfoWithValuesComparator = functi
   return TypeInfoWithValuesComparator;
 }(_graphql.TypeInfo);
 
+function getFragmentDefinitions(query) {
+  var fragments = {};
+  (0, _graphql.visit)(typeof query === "string" ? (0, _graphql.parse)(query) : query, _defineProperty({}, _graphql.Kind.FRAGMENT_DEFINITION, {
+    enter: function enter(node) {
+      fragments[node.name.value] = node;
+    }
+  }));
+  return fragments;
+}
+
 function selectedDataHaveChanged(_ref2) {
+  var _visitWithTypeInfo;
+
   var query = _ref2.query,
       schema = _ref2.schema,
       queryHash = _ref2.queryHash,
       reducer1 = _ref2.reducer1,
-      reducer2 = _ref2.reducer2;
+      reducer2 = _ref2.reducer2,
+      typeInfo = _ref2.typeInfo,
+      fragments = _ref2.fragments;
 
-  var typeInfo = new TypeInfoWithValuesComparator({
+  var declaredFragments = fragments || getFragmentDefinitions(query);
+  var initializedTypeInfo = typeInfo || new TypeInfoWithValuesComparator({
     schema: schema,
     reducer1: reducer1,
     reducer2: reducer2,
@@ -1047,11 +1063,29 @@ function selectedDataHaveChanged(_ref2) {
     queryHash2: queryHash
   });
   var hasChanged = false;
-  (0, _graphql.visit)((0, _graphql.parse)(query), (0, _graphql.visitWithTypeInfo)(typeInfo, _defineProperty({}, _graphql.Kind.FIELD, {
+  (0, _graphql.visit)(typeof query === "string" ? (0, _graphql.parse)(query) : query, (0, _graphql.visitWithTypeInfo)(initializedTypeInfo, (_visitWithTypeInfo = {}, _defineProperty(_visitWithTypeInfo, _graphql.Kind.FRAGMENT_SPREAD, {
     enter: function enter(node) {
-      hasChanged = typeInfo.shouldBreak();
+      var fragmentDefinition = declaredFragments[node.name.value];
+      if (fragmentDefinition == null) {
+        console.error("fragment " + node.name.value + " is not defined");
+        throw new Error("Aborting because of unknown fragment " + node.name.value);
+      }
+      hasChanged = hasChanged || selectedDataHaveChanged({
+        query: fragmentDefinition.selectionSet,
+        schema: schema,
+        queryHash: queryHash,
+        reducer1: reducer1,
+        reducer2: reducer2,
+        typeInfo: initializedTypeInfo,
+        fragments: declaredFragments
+      });
     }
-  })));
+  }), _defineProperty(_visitWithTypeInfo, _graphql.Kind.FIELD, {
+    enter: function enter(node) {
+      hasChanged = initializedTypeInfo.shouldBreak();
+      if (hasChanged) return _graphql.BREAK;
+    }
+  }), _visitWithTypeInfo)));
   return hasChanged;
 }
 
@@ -1066,7 +1100,195 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _TestUtils = __webpack_require__(11);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.convertsFieldToSelectorField = convertsFieldToSelectorField;
+exports.convertsTypeToSelectorType = convertsTypeToSelectorType;
+exports.convertsTypeMapToSelectorTypeMap = convertsTypeMapToSelectorTypeMap;
+exports.convertsRootQueryToSelectorRootQuery = convertsRootQueryToSelectorRootQuery;
+exports.convertsTypesSchemaToSelectorSchema = convertsTypesSchemaToSelectorSchema;
+exports.convertsQueryToSelectorQuery = convertsQueryToSelectorQuery;
+
+var _immutable = __webpack_require__(4);
+
+var _graphql = __webpack_require__(0);
+
+var _graphqlTypesConverters = __webpack_require__(1);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function getResolveQuery(entityName) {
+  return function resolveQuery(parent, args, context, _ref) {
+    var rootValue = _ref.rootValue,
+        fieldName = _ref.fieldName,
+        returnType = _ref.returnType,
+        path = _ref.path;
+
+    if (context == null || context.db == null || context.queryHash == null) throw new Error("You have to pass database (entities and results) as db and graphql query as queryHash in contextValue");
+    var queryResult = context.db.getIn(["queries", context.queryHash, "results", "byQuery", path !== undefined ? path.key : fieldName]);
+    if (queryResult == null) {
+      if (returnType instanceof _graphql.GraphQLList) return [];else return null;
+    }
+    if (returnType instanceof _graphql.GraphQLList) {
+      var _typeName = getEntityTypeNameFromSelectorTypeName((0, _graphql.getNamedType)(returnType.ofType).name);
+      return queryResult.map(function (id) {
+        return context.db.getIn(["entities", _typeName, id.toString()]);
+      });
+    } else if (queryResult != null) {
+      return context.db.getIn(["entities", getEntityTypeNameFromSelectorTypeName((0, _graphql.getNamedType)(returnType).name), queryResult.toString()]);
+    } else {
+      return null;
+    }
+  };
+}
+
+function getResolveEntity(entityName) {
+  return function resolveEntity(parent, args, context) {
+    var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
+        rootValue = _ref2.rootValue,
+        fieldName = _ref2.fieldName,
+        returnType = _ref2.returnType;
+
+    var fieldValue = parent[fieldName];
+    if (returnType instanceof _graphql.GraphQLList && fieldValue != null) {
+      return fieldValue.map(function (id) {
+        return context.db.getIn(["entities", entityName, id.toString()]);
+      });
+    } else if (fieldValue != null) {
+      return context.db.getIn(["entities", entityName, fieldValue.toString()]);
+    } else {
+      return null;
+    }
+  };
+}
+
+function getSelectorTypeName(name) {
+  return name + "Selector";
+}
+
+function getEntityTypeNameFromSelectorTypeName(name) {
+  return name.substring(0, name.length - 8);
+}
+
+function getSelectorTypeFromType(type, typesMap) {
+  if (type instanceof _graphql.GraphQLList) return new _graphql.GraphQLList(getSelectorTypeFromType(type.ofType, typesMap));else if (type instanceof _graphql.GraphQLObjectType) {
+    var _typeName2 = getSelectorTypeName((0, _graphql.getNamedType)(type).name);
+    if (typesMap[_typeName2] == null) {
+      throw new Error("Something went wrong in schema conversions. Trying to access " + _typeName2 + " type is impossible in Selectors Schema TypeMap");
+    }
+    // $FlowFixMe
+    return typesMap[_typeName2];
+  } else {
+    return type;
+  }
+}
+
+function convertsArgsArrayToArgsMap(args) {
+  return args.reduce(function (red, arg) {
+    return _extends({}, red, _defineProperty({}, arg.name, arg));
+  }, {});
+}
+
+function convertsFieldToSelectorField(query, typesMap, type) {
+  var resolver = void 0;
+  var name = void 0;
+  switch (type) {
+    case "entity":
+      name = getSelectorTypeName(query.name);
+      resolver = getResolveEntity((0, _graphql.getNamedType)(query.type).name);
+      break;
+    case "query":
+      name = getSelectorTypeName(query.name);
+      resolver = getResolveQuery((0, _graphql.getNamedType)(query.type).name);
+      break;
+    default:
+      name = query.name;
+  }
+  return {
+    description: query.description,
+    args: convertsArgsArrayToArgsMap(query.args),
+    type: getSelectorTypeFromType(query.type, typesMap),
+    resolve: resolver
+  };
+}
+
+function convertsTypeToSelectorType(type, typeMap) {
+  var selectorName = getSelectorTypeName(type.name);
+  return new _graphql.GraphQLObjectType({
+    name: selectorName,
+    fields: function fields() {
+      return Object.keys(type.getFields()).reduce(function (red, key) {
+        return _extends({}, red, _defineProperty({}, key, (0, _graphqlTypesConverters.isEntity)((0, _graphql.getNamedType)(type.getFields()[key].type)) ? convertsFieldToSelectorField(type.getFields()[key], typeMap, "entity") : convertsFieldToSelectorField(type.getFields()[key], typeMap, "scalar")));
+      }, {});
+    }
+  });
+}
+
+function convertsTypeMapToSelectorTypeMap(typeMap) {
+  var newTypeMap = {};
+  Object.keys(typeMap).forEach(function (key) {
+    var type = typeMap[key];
+    if (
+    /*isEntity(type) === true &&*/type instanceof _graphql.GraphQLObjectType && !key.startsWith("__")) {
+      newTypeMap[getSelectorTypeName(key)] = convertsTypeToSelectorType(type, newTypeMap);
+    } else {
+      newTypeMap[key] = type;
+    }
+  });
+  return newTypeMap;
+}
+
+function convertsRootQueryToSelectorRootQuery(rootQuery, selectorTypeMap) {
+  return new _graphql.GraphQLObjectType({
+    name: "SelectorsRootQueryType",
+    fields: Object.keys(rootQuery.getFields()).reduce(function (red, key) {
+      return _extends({}, red, _defineProperty({}, key, convertsFieldToSelectorField(rootQuery.getFields()[key], selectorTypeMap, "query")));
+    }, {})
+  });
+}
+
+function convertsTypesSchemaToSelectorSchema(schema) {
+  var _ref3 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+      _ref3$markers = _ref3.markers,
+      markers = _ref3$markers === undefined ? ["id"] : _ref3$markers,
+      _ref3$__debug = _ref3.__debug,
+      __debug = _ref3$__debug === undefined ? false : _ref3$__debug;
+
+  var typesMap = schema.getTypeMap();
+  var selectorTypesMap = convertsTypeMapToSelectorTypeMap(typesMap);
+  if (__debug) {
+    console.log("DataModel TypeMap:", typesMap, "\nSelector TypeMap:", selectorTypesMap);
+  }
+  var typesQuery = schema.getQueryType();
+  var selectorTypesQuery = convertsRootQueryToSelectorRootQuery(typesQuery, selectorTypesMap);
+  var selectorSchema = new _graphql.GraphQLSchema({
+    query: selectorTypesQuery
+  });
+  return selectorSchema;
+}
+
+function convertsQueryToSelectorQuery(query) {
+  return (0, _graphql.visit)(typeof query === "string" ? (0, _graphql.parse)(query) : query, _defineProperty({}, _graphql.Kind.FRAGMENT_DEFINITION, {
+    enter: function enter(node) {
+      var copiedNode = (0, _graphql.visit)(node, {});
+      copiedNode.typeCondition.name.value = getSelectorTypeName(copiedNode.typeCondition.name.value);
+      return copiedNode;
+    }
+  }));
+}
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _TestUtils = __webpack_require__(12);
 
 Object.defineProperty(exports, "createTestLab", {
   enumerable: true,
@@ -1075,7 +1297,7 @@ Object.defineProperty(exports, "createTestLab", {
   }
 });
 
-var _configurer = __webpack_require__(27);
+var _configurer = __webpack_require__(28);
 
 Object.defineProperty(exports, "configure", {
   enumerable: true,
@@ -1138,7 +1360,7 @@ Object.defineProperty(exports, "graphQLRecordr", {
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1159,7 +1381,7 @@ var _Mutation = __webpack_require__(2);
 
 var _Mutation2 = _interopRequireDefault(_Mutation);
 
-var _recompose = __webpack_require__(12);
+var _recompose = __webpack_require__(13);
 
 var _reducer = __webpack_require__(3);
 
@@ -1280,7 +1502,7 @@ function createTestLab(TestedHOC) {
 }
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1328,13 +1550,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setObservableConfig", function() { return configureObservable; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fbjs_lib_shallowEqual__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fbjs_lib_shallowEqual__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fbjs_lib_shallowEqual___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_fbjs_lib_shallowEqual__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_change_emitter__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_change_emitter__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_change_emitter___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_change_emitter__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_symbol_observable__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_symbol_observable__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_symbol_observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_symbol_observable__);
 /* harmony reexport (default from non-hamory) */ __webpack_require__.d(__webpack_exports__, "shallowEqual", function() { return __WEBPACK_IMPORTED_MODULE_1_fbjs_lib_shallowEqual___default.a; });
 
@@ -2409,10 +2631,10 @@ var createEventHandler = createEventHandlerWithConfig(config);
 
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(14)))
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -2602,7 +2824,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2675,7 +2897,7 @@ function shallowEqual(objA, objB) {
 module.exports = shallowEqual;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2732,7 +2954,7 @@ module.exports = function hoistNonReactStatics(targetComponent, sourceComponent,
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2789,14 +3011,14 @@ var createChangeEmitter = exports.createChangeEmitter = function createChangeEmi
 };
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(18);
+module.exports = __webpack_require__(19);
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2806,7 +3028,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ponyfill = __webpack_require__(21);
+var _ponyfill = __webpack_require__(22);
 
 var _ponyfill2 = _interopRequireDefault(_ponyfill);
 
@@ -2829,10 +3051,10 @@ if (typeof self !== 'undefined') {
 
 var result = (0, _ponyfill2['default'])(root);
 exports['default'] = result;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19), __webpack_require__(20)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20), __webpack_require__(21)(module)))
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 var g;
@@ -2859,7 +3081,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -2887,7 +3109,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2916,7 +3138,7 @@ function symbolObservablePonyfill(root) {
 };
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3048,7 +3270,7 @@ var EntitySchema = function () {
 exports.default = EntitySchema;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3102,7 +3324,7 @@ var UnionSchema = function (_PolymorphicSchema) {
 exports.default = UnionSchema;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3167,7 +3389,7 @@ var ValuesSchema = function (_PolymorphicSchema) {
 exports.default = ValuesSchema;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3265,7 +3487,7 @@ var ArraySchema = function (_PolymorphicSchema) {
 exports.default = ArraySchema;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3362,7 +3584,7 @@ var ObjectSchema = function () {
 exports.default = ObjectSchema;
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3378,7 +3600,7 @@ var _normalizr = __webpack_require__(7);
 
 var _graphql = __webpack_require__(0);
 
-var _middleware = __webpack_require__(28);
+var _middleware = __webpack_require__(29);
 
 var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -3386,17 +3608,17 @@ var _reducer = __webpack_require__(3);
 
 var _reducer2 = _interopRequireDefault(_reducer);
 
-var _actions = __webpack_require__(30);
+var _actions = __webpack_require__(31);
 
 var _actions2 = _interopRequireDefault(_actions);
 
-var _hoc = __webpack_require__(31);
+var _hoc = __webpack_require__(32);
 
 var _hoc2 = _interopRequireDefault(_hoc);
 
 var _graphqlTypesConverters = __webpack_require__(1);
 
-var _selectors = __webpack_require__(32);
+var _selectors = __webpack_require__(10);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3437,7 +3659,7 @@ function configure(graphQLSchema, context, rootValue) {
 }
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3524,14 +3746,14 @@ var _Mutation = __webpack_require__(2);
 
 var _Mutation2 = _interopRequireDefault(_Mutation);
 
-var _Query = __webpack_require__(29);
+var _Query = __webpack_require__(30);
 
 var _Query2 = _interopRequireDefault(_Query);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3588,7 +3810,7 @@ var Query = function () {
 exports.default = Query;
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3669,7 +3891,7 @@ function configureActions() {
 }
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3703,6 +3925,8 @@ var _reducer = __webpack_require__(3);
 var _Mutation = __webpack_require__(2);
 
 var _Mutation2 = _interopRequireDefault(_Mutation);
+
+var _selectors = __webpack_require__(10);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3952,7 +4176,7 @@ function configureConnecter() {
               if (props.__debug) {
                 console.log("SELECTING data for hash", hash, " -- date:", Date.now());
               }
-              (0, _graphql.graphql)(selectorSchema, query, null, {
+              (0, _graphql.graphql)(selectorSchema, (0, _graphql.print)((0, _selectors.convertsQueryToSelectorQuery)(query)), null, {
                 db: reducer,
                 queryHash: hash
               }).then(function (result) {
@@ -4025,183 +4249,6 @@ function configureConnecter() {
     };
   }
   return { GraphQLConnecter: GraphQLConnecter, DataHandlers: DataHandlers, DataFetcher: DataFetcher };
-}
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-exports.convertsFieldToSelectorField = convertsFieldToSelectorField;
-exports.convertsTypeToSelectorType = convertsTypeToSelectorType;
-exports.convertsTypeMapToSelectorTypeMap = convertsTypeMapToSelectorTypeMap;
-exports.convertsRootQueryToSelectorRootQuery = convertsRootQueryToSelectorRootQuery;
-exports.convertsTypesSchemaToSelectorSchema = convertsTypesSchemaToSelectorSchema;
-
-var _immutable = __webpack_require__(4);
-
-var _graphql = __webpack_require__(0);
-
-var _graphqlTypesConverters = __webpack_require__(1);
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function getResolveQuery(entityName) {
-  return function resolveQuery(parent, args, context, _ref) {
-    var rootValue = _ref.rootValue,
-        fieldName = _ref.fieldName,
-        returnType = _ref.returnType,
-        path = _ref.path;
-
-    if (context == null || context.db == null || context.queryHash == null) throw new Error("You have to pass database (entities and results) as db and graphql query as queryHash in contextValue");
-    var queryResult = context.db.getIn(["queries", context.queryHash, "results", "byQuery", path !== undefined ? path.key : fieldName]);
-    if (queryResult == null) {
-      if (returnType instanceof _graphql.GraphQLList) return [];else return null;
-    }
-    if (returnType instanceof _graphql.GraphQLList) {
-      var _typeName = getEntityTypeNameFromSelectorTypeName((0, _graphql.getNamedType)(returnType.ofType).name);
-      return queryResult.map(function (id) {
-        return context.db.getIn(["entities", _typeName, id.toString()]);
-      });
-    } else if (queryResult != null) {
-      return context.db.getIn(["entities", getEntityTypeNameFromSelectorTypeName((0, _graphql.getNamedType)(returnType).name), queryResult.toString()]);
-    } else {
-      return null;
-    }
-  };
-}
-
-function getResolveEntity(entityName) {
-  return function resolveEntity(parent, args, context) {
-    var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {},
-        rootValue = _ref2.rootValue,
-        fieldName = _ref2.fieldName,
-        returnType = _ref2.returnType;
-
-    var fieldValue = parent[fieldName];
-    if (returnType instanceof _graphql.GraphQLList && fieldValue != null) {
-      return fieldValue.map(function (id) {
-        return context.db.getIn(["entities", entityName, id.toString()]);
-      });
-    } else if (fieldValue != null) {
-      return context.db.getIn(["entities", entityName, fieldValue.toString()]);
-    } else {
-      return null;
-    }
-  };
-}
-
-function getSelectorTypeName(name) {
-  return name + "Selector";
-}
-
-function getEntityTypeNameFromSelectorTypeName(name) {
-  return name.substring(0, name.length - 8);
-}
-
-function getSelectorTypeFromType(type, typesMap) {
-  if (type instanceof _graphql.GraphQLList) return new _graphql.GraphQLList(getSelectorTypeFromType(type.ofType, typesMap));else if (type instanceof _graphql.GraphQLObjectType) {
-    var _typeName2 = getSelectorTypeName((0, _graphql.getNamedType)(type).name);
-    if (typesMap[_typeName2] == null) {
-      throw new Error("Something went wrong in schema conversions. Trying to access " + _typeName2 + " type is impossible in Selectors Schema TypeMap");
-    }
-    // $FlowFixMe
-    return typesMap[_typeName2];
-  } else {
-    return type;
-  }
-}
-
-function convertsArgsArrayToArgsMap(args) {
-  return args.reduce(function (red, arg) {
-    return _extends({}, red, _defineProperty({}, arg.name, arg));
-  }, {});
-}
-
-function convertsFieldToSelectorField(query, typesMap, type) {
-  var resolver = void 0;
-  var name = void 0;
-  switch (type) {
-    case "entity":
-      name = getSelectorTypeName(query.name);
-      resolver = getResolveEntity((0, _graphql.getNamedType)(query.type).name);
-      break;
-    case "query":
-      name = getSelectorTypeName(query.name);
-      resolver = getResolveQuery((0, _graphql.getNamedType)(query.type).name);
-      break;
-    default:
-      name = query.name;
-  }
-  return {
-    description: query.description,
-    args: convertsArgsArrayToArgsMap(query.args),
-    type: getSelectorTypeFromType(query.type, typesMap),
-    resolve: resolver
-  };
-}
-
-function convertsTypeToSelectorType(type, typeMap) {
-  var selectorName = getSelectorTypeName(type.name);
-  return new _graphql.GraphQLObjectType({
-    name: selectorName,
-    fields: function fields() {
-      return Object.keys(type.getFields()).reduce(function (red, key) {
-        return _extends({}, red, _defineProperty({}, key, (0, _graphqlTypesConverters.isEntity)((0, _graphql.getNamedType)(type.getFields()[key].type)) ? convertsFieldToSelectorField(type.getFields()[key], typeMap, "entity") : convertsFieldToSelectorField(type.getFields()[key], typeMap, "scalar")));
-      }, {});
-    }
-  });
-}
-
-function convertsTypeMapToSelectorTypeMap(typeMap) {
-  var newTypeMap = {};
-  Object.keys(typeMap).forEach(function (key) {
-    var type = typeMap[key];
-    if (
-    /*isEntity(type) === true &&*/type instanceof _graphql.GraphQLObjectType && !key.startsWith("__")) {
-      newTypeMap[getSelectorTypeName(key)] = convertsTypeToSelectorType(type, newTypeMap);
-    } else {
-      newTypeMap[key] = type;
-    }
-  });
-  return newTypeMap;
-}
-
-function convertsRootQueryToSelectorRootQuery(rootQuery, selectorTypeMap) {
-  return new _graphql.GraphQLObjectType({
-    name: "SelectorsRootQueryType",
-    fields: Object.keys(rootQuery.getFields()).reduce(function (red, key) {
-      return _extends({}, red, _defineProperty({}, key, convertsFieldToSelectorField(rootQuery.getFields()[key], selectorTypeMap, "query")));
-    }, {})
-  });
-}
-
-function convertsTypesSchemaToSelectorSchema(schema) {
-  var _ref3 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-      _ref3$markers = _ref3.markers,
-      markers = _ref3$markers === undefined ? ["id"] : _ref3$markers,
-      _ref3$__debug = _ref3.__debug,
-      __debug = _ref3$__debug === undefined ? false : _ref3$__debug;
-
-  var typesMap = schema.getTypeMap();
-  var selectorTypesMap = convertsTypeMapToSelectorTypeMap(typesMap);
-  if (__debug) {
-    console.log("DataModel TypeMap:", typesMap, "\nSelector TypeMap:", selectorTypesMap);
-  }
-  var typesQuery = schema.getQueryType();
-  var selectorTypesQuery = convertsRootQueryToSelectorRootQuery(typesQuery, selectorTypesMap);
-  var selectorSchema = new _graphql.GraphQLSchema({
-    query: selectorTypesQuery
-  });
-  return selectorSchema;
 }
 
 /***/ })
