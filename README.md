@@ -143,7 +143,7 @@ You have to send the reducer and dispatch as props to DataFetcher.
 
 - [ ] variables
 - [ ] aliases
-- [ ] fragments
+- [x] fragments
 - [ ] directives (Haven't tried, maybe it works).
 
 #### How to Unit Test DataFetcher
