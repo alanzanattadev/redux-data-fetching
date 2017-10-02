@@ -4,3 +4,12 @@ exports[`TestUtils createTestLab tests a correct DataFetcher correctly 1`] = `
 Immutable.List [
 ]
 `;
+
+exports[`TestUtils createTestLab tests a correct DataHandlers correctly 1`] = `
+Object {
+  "createUser": Object {
+    "id": "ah",
+    "name": "Alan",
+  },
+}
+`;

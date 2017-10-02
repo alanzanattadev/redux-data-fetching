@@ -1476,13 +1476,15 @@ function createTestLab(TestedHOC) {
   var _ref3 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
       _ref3$reducerName = _ref3.reducerName,
       reducerName = _ref3$reducerName === undefined ? "data" : _ref3$reducerName,
-      schema = _ref3.schema;
+      schema = _ref3.schema,
+      rootValue = _ref3.rootValue,
+      contextValue = _ref3.contextValue;
 
   if (schema == null) {
     throw new Error("You have to give your graphql schema to the lab. createTestLab(HOC, { schema: YOUR-SCHEMA })");
   }
   var Subject = TestedHOC(MockView);
-  var proxies = configureProxies({ schema: schema });
+  var proxies = configureProxies({ schema: schema, rootValue: rootValue, contextValue: contextValue });
   var DataLab = (0, _recompose.compose)((0, _recompose.withPropsOnChange)(["dispatch"], function (_ref4) {
     var dispatch = _ref4.dispatch,
         onResolve = _ref4.onResolve,
