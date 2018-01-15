@@ -29,7 +29,7 @@ import { buildSchema } from "graphql";
 const graphQLSchema = buildSchema(`
   type Query {
     user(id: String!): User,
-    users(): [User],
+    users: [User],
   }
   
   type User {
@@ -55,7 +55,7 @@ let {reducer, middleware, actions, DataFetcher, DataHandlers} = configure(graphQ
 createStore(combineReducers({
   data: reducer,
 }), {}, compose(
-  applyMiddleware([middleware])
+  applyMiddleware(middleware)
 ));
 ```
 
